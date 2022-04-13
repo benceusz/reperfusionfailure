@@ -19,7 +19,17 @@ warnings.filterwarnings('ignore')
 warnings.warn('DelftStack')
 warnings.warn('Do not show this message')
 
+PROJECT_DIR = os.getcwd()
 PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(os.path.dirname(os.path.abspath("__file__")) , "mni152_brainmask.nii.gz")
+PATH_GLOBAL_CSV_CT_PENUMBRA = os.path.join(PROJECT_DIR, 'values_all_ct_penumbra.csv')
+PATH_GLOBAL_CSV_MRI_PENUMBRA = os.path.join(PROJECT_DIR,'values_all_mr_penumbra.csv')
+
+PATH_GLOBAL_CSV_CT_P46 = os.path.join(PROJECT_DIR,'values_all_ct_p46.csv')
+PATH_GLOBAL_CSV_MRI_P46 = os.path.join(PROJECT_DIR,'values_all_mr_p46.csv')
+
+PATH_GLOBAL_CSV_CT_CORE = os.path.join(PROJECT_DIR,'values_all_ct_core.csv')
+PATH_GLOBAL_CSV_MRI_CORE = os.path.join(PROJECT_DIR,'values_all_mr_core.csv')
+
 
 ### HELPER FUNCTIONS ###
 def get_name_of_folder(a_path):
@@ -60,7 +70,8 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
         nb.save(nii_img, filepath)
         print('Image has been saved to {}'.format(filepath))
     else:
-        print("Image already exists!")
+        # print("Image already exists!")
+        pass
         
 # run flirt with default 6 dof
 def run_flirt(path_infile, 
@@ -90,7 +101,8 @@ def run_flirt(path_infile,
         res = flt.run()
         print("Coregistration has saved to: {}".format(out_file))
     else:
-        print("Flirt coregistration already exists!")
+        # print("Flirt coregistration already exists!")
+        pass
     
     return out_file
 
@@ -179,7 +191,7 @@ def run_ct_coreg(DATA_DIR):
     # specify all the possible sequence names that the algorihtm should iterate on
     # more names can be listed. Only exact matches will be processed
     PERFUSION_FILES = [ "CBFD","CBVD","MIP", "MTTD", "TMAXD","TTDD", "TTPM"]
-    MASK_FILES = ["mask_core", "mask_penumbra", "mask_penumbra_bl", "mask_penumbra_v1", "mask_penumbra_bl_4-6"]
+    MASK_FILES = ["mask_core","mask_core_v1", "mask_penumbra", "mask_penumbra_bl", "mask_penumbra_v1", "mask_penumbra_bl_4-6"]
     DWI_FILES = []
     NIFTI_FILES = []
     BOLD_FILES = []
@@ -272,7 +284,8 @@ def run_ct_coreg(DATA_DIR):
                     # print("Failure at processing file %s" % i_img)
                     pass
             else:
-                print("File %s already exist " % path_out_file)
+                # print("File %s already exist " % path_out_file)
+                pass
 
 
     else:
@@ -349,14 +362,15 @@ def run_ct_coreg(DATA_DIR):
                 # print("Failure at processing file %s" % path_out_file)
                 pass
         else:
-            print("File %s already exist " % path_out_file)
+            # print("File %s already exist " % path_out_file)
+            pass
 
 #  read the coregistered CBF file
     PATH_TMAX = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_TMAXD.nii.gz' )
     #if os.path.exists(PATH_TMAX):
-    print("Tmax exist")
-    vol_tmax = nb.load(PATH_TMAX)
-    np_vol_tmax = vol_tmax.get_fdata()
+    if os.path.exists(PATH_TMAX):
+        vol_tmax = nb.load(PATH_TMAX)
+        np_vol_tmax = vol_tmax.get_fdata()
 
     PATH_RBV = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_CBVD.nii.gz' )
     if os.path.exists(PATH_RBV):
@@ -444,7 +458,15 @@ def run_ct_coreg(DATA_DIR):
                 roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]      
                 seq_values_core = [np.mean(roi_core ), np.std(roi_core ), np.min(roi_core ), np.max(roi_core ),np.median(roi_core ),np.percentile(roi_core ,25),np.percentile(roi_core ,75) ]
                 print(seq_values_core )
-                
+	
+            if os.path.exists(PATH_MASK_PENUMBRA):
+                values = values + seq_value
+
+            if os.path.exists(PATH_MASK_PENUMBRA46):
+                values_p46 = values_p46 + seq_values_p46
+
+            if os.path.exists(PATH_MASK_CORE):
+                values_core = values_core + seq_values_core                
         else:
             # seq_values = np.full([1, len(list_calculated)],1)
             # seq_values = np.full([1, len(list_calculated)], 0)
@@ -455,30 +477,30 @@ def run_ct_coreg(DATA_DIR):
             if os.path.exists(PATH_MASK_CORE):
                 seq_values_core = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
 
+
         # values to the sequence
         if os.path.exists(PATH_MASK_PENUMBRA):
-            values = values + seq_values
             df_penumbra= pd.DataFrame(index=index, columns=columns)
             df_penumbra.loc[index[0]] = values
             PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
             df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
-            #df_penumbra.to_csv(PATH_GLOBAL_CSV_POSTOP, mode='a', header=False)
-            # df_penumbra.to_csv(PATH_GLOBAL_CSV_CT_MRI, mode='a', header=False)
+            df_penumbra.to_csv(PATH_GLOBAL_CSV_CT_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_PENUMBRA)))
+
 
         if os.path.exists(PATH_MASK_PENUMBRA46):
-            values_p46 = values_p46 + seq_values_p46
             df_p46= pd.DataFrame(index=index, columns=columns)
             df_p46.loc[index[0]] = values_p46
             PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_p46.csv')
             df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
+            df_p46.to_csv(PATH_GLOBAL_CSV_CT_P46, mode='a', header =(not os.path.exists(PATH_GLOBAL_CSV_CT_P46)) )
 
         if os.path.exists(PATH_MASK_CORE):
-            values_core = values_core + seq_values_core
             df_core= pd.DataFrame(index=index, columns=columns)
             df_core.loc[index[0]] = values_core
             PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
             df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
-            
+            df_core.to_csv(PATH_GLOBAL_CSV_CT_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_CORE)))
+
 
     
 def run_mr_coreg(DATA_DIR):
@@ -535,7 +557,8 @@ def run_mr_coreg(DATA_DIR):
                 # print("Failure at processing file %s", path_out_file)
                 pass
         else:
-            print("File %s already exist " % path_out_file)
+            # print("File %s already exist " % path_out_file)
+            pass
             
     
     # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"] 
@@ -592,7 +615,8 @@ def run_mr_coreg(DATA_DIR):
                     # print("Failure at processing file %s" % path_out_file)
                     pass
             else:
-                print("File %s already exist " % path_out_file)
+                # print("File %s already exist " % path_out_file)
+                pass
     else:
         print("B1000 baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
@@ -658,7 +682,9 @@ def run_mr_coreg(DATA_DIR):
     for i_img in BOLD_FILES:
         #try:
         path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-        path_matrix_file_bold = os.path.join( os.getcwd(), "inv_coreg_T1_BOLD.txt")
+        path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.mat")
+        if not os.path.isfile(path_matrix_file_bold):
+            path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.txt")
 
         print("Coregistration of {} to T1".format(i_img))
         path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img  + ".nii.gz")
@@ -730,7 +756,8 @@ def run_mr_coreg(DATA_DIR):
                 # print("Failure at processing file %s" % path_out_file)
                 pass
         else:
-            print("File %s already exist " % path_out_file)
+            # print("File %s already exist " % path_out_file)
+            pass
 
         ### calculate the values
     #  read the coregistered CBF file
@@ -810,7 +837,9 @@ def run_mr_coreg(DATA_DIR):
                 roi = np_vol_masked[np_vol_mask>0.5]       
                 seq_values = [np.mean(roi), np.std(roi), np.min(roi), np.max(roi),np.median(roi),np.percentile(roi,25),np.percentile(roi,75) ]
                 print(seq_values)
+                values = values + seq_values
                 
+
             if os.path.exists(PATH_MASK_PENUMBRA46):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked_p46  = np.zeros(np_vol_mask_p46 .shape)
@@ -818,6 +847,7 @@ def run_mr_coreg(DATA_DIR):
                 roi_p46  = np_vol_masked_p46 [np_vol_mask_p46 >0.5]
                 seq_values_p46 = [np.mean(roi_p46), np.std(roi_p46), np.min(roi_p46), np.max(roi_p46),np.median(roi_p46),np.percentile(roi_p46,25),np.percentile(roi_p46,75) ]
                 print(seq_values_p46)
+                values_p46 = values_p46 + seq_values_p46
                 
             if os.path.exists(PATH_MASK_CORE):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
@@ -826,7 +856,8 @@ def run_mr_coreg(DATA_DIR):
                 roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]      
                 seq_values_core = [np.mean(roi_core ), np.std(roi_core ), np.min(roi_core ), np.max(roi_core ),np.median(roi_core ),np.percentile(roi_core ,25),np.percentile(roi_core ,75) ]
                 print(seq_values_core )
-                
+                values_core = values_core + seq_values_core
+
         else:
             # seq_values = np.full([1, len(list_calculated)],1)
             # seq_values = np.full([1, len(list_calculated)], 0)
@@ -839,35 +870,33 @@ def run_mr_coreg(DATA_DIR):
 
         # values to the sequence
         if os.path.exists(PATH_MASK_PENUMBRA):
-            values = values + seq_values
             df_penumbra= pd.DataFrame(index=index, columns=columns)
             df_penumbra.loc[index[0]] = values
             PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
             df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
-            #df_penumbra.to_csv(PATH_GLOBAL_CSV_POSTOP, mode='a', header=False)
-            # df_penumbra.to_csv(PATH_GLOBAL_CSV_CT_MRI, mode='a', header=False)
+            df_penumbra.to_csv(PATH_GLOBAL_CSV_MRI_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_PENUMBRA)))
 
         if os.path.exists(PATH_MASK_PENUMBRA46):
-            values_p46 = values_p46 + seq_values_p46
             df_p46= pd.DataFrame(index=index, columns=columns)
             df_p46.loc[index[0]] = values_p46
             PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'._p46.csv')
             df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
+            df_p46.to_csv(PATH_GLOBAL_CSV_MRI_P46, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_P46)))
 
         if os.path.exists(PATH_MASK_CORE):
-            values_core = values_core + seq_values_core
             df_core= pd.DataFrame(index=index, columns=columns)
             df_core.loc[index[0]] = values_core
             PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
             df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
-            
+            df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
 
-            
+
+          
 if __name__ == '__main__':
 
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
-    PATH_GLOBAL_CSV_CT_MRI = PROJECT_DIR
+    # PATH_GLOBAL_CSV_CT_MRI = PROJECT_DIR
     #DATA_DIR = "/media/nraresearch/ben_usz/crpp_reperfusion_failure"
     #DATA_DIR = os.getcwd()
     "/media/nraresearch/ben_usz/crpp_reperfusion_failure/CRPP1_Test/crpp1_baseline_10102019"
@@ -887,15 +916,14 @@ if __name__ == '__main__':
             i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
             match = nativ_in_folder(i_dirpath)
             if match==1:
-                # try:
-                run_ct_coreg(i_dirpath)
-                #except:
-                #print("Crush during processing %s" % i_patient)
+                try:
+                    run_ct_coreg(i_dirpath)
+                except:
+                    print("Crush during processing %s" % i_patient)
                 
             else:
-                #pass
-                #try:
-                run_mr_coreg(i_dirpath)
-                #except:
-                #print("Crush during processing")
+                try:
+                    run_mr_coreg(i_dirpath)
+                except:
+                    print("Crush during processing %s" % i_patient)              
 
