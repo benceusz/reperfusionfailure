@@ -479,28 +479,28 @@ def run_ct_coreg(DATA_DIR):
 
 
 
-        # values to the sequence
-        if os.path.exists(PATH_MASK_PENUMBRA):
-            df_penumbra= pd.DataFrame(index=index, columns=columns)
-            df_penumbra.loc[index[0]] = values
-            PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
-            df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
-            df_penumbra.to_csv(PATH_GLOBAL_CSV_CT_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_PENUMBRA)))
+    # values to the sequence
+    if os.path.exists(PATH_MASK_PENUMBRA):
+        df_penumbra= pd.DataFrame(index=index, columns=columns)
+        df_penumbra.loc[index[0]] = values
+        PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
+        df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
+        df_penumbra.to_csv(PATH_GLOBAL_CSV_CT_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_PENUMBRA)))
 
 
-        if os.path.exists(PATH_MASK_PENUMBRA46):
-            df_p46= pd.DataFrame(index=index, columns=columns)
-            df_p46.loc[index[0]] = values_p46
-            PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_p46.csv')
-            df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
-            df_p46.to_csv(PATH_GLOBAL_CSV_CT_P46, mode='a', header =(not os.path.exists(PATH_GLOBAL_CSV_CT_P46)) )
+    if os.path.exists(PATH_MASK_PENUMBRA46):
+        df_p46= pd.DataFrame(index=index, columns=columns)
+        df_p46.loc[index[0]] = values_p46
+        PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_p46.csv')
+        df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
+        df_p46.to_csv(PATH_GLOBAL_CSV_CT_P46, mode='a', header =(not os.path.exists(PATH_GLOBAL_CSV_CT_P46)) )
 
-        if os.path.exists(PATH_MASK_CORE):
-            df_core= pd.DataFrame(index=index, columns=columns)
-            df_core.loc[index[0]] = values_core
-            PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
-            df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
-            df_core.to_csv(PATH_GLOBAL_CSV_CT_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_CORE)))
+    if os.path.exists(PATH_MASK_CORE):
+        df_core= pd.DataFrame(index=index, columns=columns)
+        df_core.loc[index[0]] = values_core
+        PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
+        df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
+        df_core.to_csv(PATH_GLOBAL_CSV_CT_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_CORE)))
 
 
 
@@ -778,6 +778,14 @@ def run_mr_coreg(DATA_DIR):
         vol_rbf = nb.load(PATH_RBF)
         np_vol_rbf = vol_rbf.get_fdata()
 
+    PATH_ADC = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_ADC.nii.gz' )
+    if not os.path.exists(PATH_ADC):
+        PATH_ADC = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_IVIM_ADC.nii.gz' )
+
+    if os.path.exists(PATH_ADC):
+        vol_adc = nb.load(PATH_ADC)
+        np_vol_adc = vol_adc.get_fdata()
+
     PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl.nii.gz")
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA):
@@ -794,7 +802,7 @@ def run_mr_coreg(DATA_DIR):
         vol_mask_penumbra46 = nb.load(PATH_MASK_PENUMBRA46)
         vol_mask.shape
         np_vol_mask_p46 = vol_mask_penumbra46.get_fdata()
-        np_vol_mask_p46[np_vol_tmax < 6] = 0
+        np_vol_mask_p46[np_vol_tmax < 4] = 0
         np_vol_mask_p46[np_vol_rbv < 0] = 0
         np_vol_mask_p46[np_vol_rbf < 0]  = 0
 
@@ -806,6 +814,7 @@ def run_mr_coreg(DATA_DIR):
         np_vol_mask_core[np_vol_tmax < 6] = 0
         np_vol_mask_core[np_vol_rbv < 0] = 0
         np_vol_mask_core[np_vol_rbf < 0]  = 0
+        np_vol_mask_core[np_vol_adc > 6]  = 0
 
     columns = ['patient','visit']
     values = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
@@ -875,27 +884,27 @@ def run_mr_coreg(DATA_DIR):
                 values_core = values_core + seq_values_core
 
 
-        # values to the sequence
-        if os.path.exists(PATH_MASK_PENUMBRA):
-            df_penumbra= pd.DataFrame(index=index, columns=columns)
-            df_penumbra.loc[index[0]] = values
-            PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
-            df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
-            df_penumbra.to_csv(PATH_GLOBAL_CSV_MRI_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_PENUMBRA)))
+    # values to the sequence
+    if os.path.exists(PATH_MASK_PENUMBRA):
+        df_penumbra= pd.DataFrame(index=index, columns=columns)
+        df_penumbra.loc[index[0]] = values
+        PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
+        df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
+        df_penumbra.to_csv(PATH_GLOBAL_CSV_MRI_PENUMBRA, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_PENUMBRA)))
 
-        if os.path.exists(PATH_MASK_PENUMBRA46):
-            df_p46= pd.DataFrame(index=index, columns=columns)
-            df_p46.loc[index[0]] = values_p46
-            PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'._p46.csv')
-            df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
-            df_p46.to_csv(PATH_GLOBAL_CSV_MRI_P46, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_P46)))
+    if os.path.exists(PATH_MASK_PENUMBRA46):
+        df_p46= pd.DataFrame(index=index, columns=columns)
+        df_p46.loc[index[0]] = values_p46
+        PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'._p46.csv')
+        df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
+        df_p46.to_csv(PATH_GLOBAL_CSV_MRI_P46, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_P46)))
 
-        if os.path.exists(PATH_MASK_CORE):
-            df_core= pd.DataFrame(index=index, columns=columns)
-            df_core.loc[index[0]] = values_core
-            PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
-            df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
-            df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
+    if os.path.exists(PATH_MASK_CORE):
+        df_core= pd.DataFrame(index=index, columns=columns)
+        df_core.loc[index[0]] = values_core
+        PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
+        df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
+        df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
 
 
 
