@@ -62,7 +62,7 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
     original_img = nb.load(PATH_MASK_MRI)
 
     filepath = OUTPUT_FOLDER + '/' + filename + '.nii.gz'
-    
+
     if not os.path.isfile(filepath):
         # array_data = np.arange(24, dtype=np.int16).reshape((2, 3, 4))
         # affine = np.diag([1, 2, 3, 1])
@@ -72,24 +72,24 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
     else:
         # print("Image already exists!")
         pass
-        
+
 # run flirt with default 6 dof
-def run_flirt(path_infile, 
+def run_flirt(path_infile,
               out_file,
-              path_reference, 
-              dof, 
-              bins = 256, 
-              out_matrix_file = 'transformation_matrix.mat', 
+              path_reference,
+              dof,
+              bins = 256,
+              out_matrix_file = 'transformation_matrix.mat',
               cost = 'corratio',
               interp = 'trilinear'):
-    
+
     #out_file_cbf = 'mni_'+os.path.basename(path_infile)[:-7] + '_to_' + os.path.basename(path_reference)[:-7]+'_dof'+ str(dof) + '.nii.gz'
 
     print("flirt coregistration for file: {}".format(out_file))
 
-    flt = fsl.FLIRT(bins=bins, 
-                    cost_func=cost, 
-                    interp = interp, 
+    flt = fsl.FLIRT(bins=bins,
+                    cost_func=cost,
+                    interp = interp,
                     in_file = path_infile,
                     reference = path_reference,
                     out_file = out_file,
@@ -103,16 +103,16 @@ def run_flirt(path_infile,
     else:
         # print("Flirt coregistration already exists!")
         pass
-    
+
     return out_file
 
-        
+
 # function for BET brain extraction
 def run_bet(input_file_path):
     """
     input:
-    input_file_path 
-    
+    input_file_path
+
     output:
     path_outfile_bet: path of the resulted brain extracted file
     path_betmask: full file path of the binary brain extraction mask
@@ -122,12 +122,12 @@ def run_bet(input_file_path):
 
     _out_file_bet = 'bet_' + os.path.basename(input_file_path)[:-7] + '.nii.gz'
     path_outfile_bet = os.path.join(OUTPUT_FOLDER, _out_file_bet)
-    
+
     if not os.path.isfile(path_outfile_bet):
         result = btr.run(in_file= input_file_path, out_file=path_outfile_bet, frac=0.7 , mask = True)
     else:
         print("Bet file already exists")
-    
+
     # path of the binary mask file
     _filename_mask = 'bet_' + os.path.basename(input_file_path)[:-7] + '_mask.nii.gz'
     path_betmask = os.path.join(OUTPUT_FOLDER, _filename_mask)
@@ -144,7 +144,7 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
     original_img = nb.load(original_img)
 
     filepath = output_folder + '/' + filename + '.nii.gz'
-    
+
     if not os.path.isfile(filepath):
         # array_data = np.arange(24, dtype=np.int16).reshape((2, 3, 4))
         # affine = np.diag([1, 2, 3, 1])
@@ -154,18 +154,17 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
     else:
         print("Image already exists!")
 
-def nativ_in_folder(path_dir, filename = "nativ.nii.gz"):    
+def nativ_in_folder(path_dir, filename = "nativ.nii.gz"):
     match = 0
     for root, dir, files in os.walk(path_dir):
         for i_file in files:
-            if i_file == "nativ.nii.gz":
+            if i_file == "nativ.nii.gz" or i_file == "TMAXD.nii.gz":
                 print(i_file)
-
                 match = 1
-                break
+                return match
             else:
                 match = 0
-    return match    
+    return match
 
 
 def subdirs(path):
@@ -173,10 +172,10 @@ def subdirs(path):
     for entry in os.scandir(path):
         if not entry.name.startswith('.') and entry.is_dir():
             yield entry.name
-            
+
 def run_ct_coreg(DATA_DIR):
     print("Running ct coregistration to mri in study: %s" % DATA_DIR)
-    
+
     """"""
         # constants
     os.chdir(DATA_DIR)
@@ -203,7 +202,7 @@ def run_ct_coreg(DATA_DIR):
     BOLD_FILES = ["CVRmap", "CVRmap", "CVRMAP"]
     """
 
-    # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"] 
+    # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"]
     os.chdir(DATA_DIR)
     # path = "./" + dir_resliced_name
     path = "./original"
@@ -256,7 +255,7 @@ def run_ct_coreg(DATA_DIR):
         tmatrix = ants.read_transform(txfile, dimension=2)
         """
         # iterate through perfusion maps
-        for i_img in PERFUSION_FILES + MASK_FILES : 
+        for i_img in PERFUSION_FILES + MASK_FILES :
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
 
             if not os.path.isfile(path_out_file):
@@ -344,7 +343,7 @@ def run_ct_coreg(DATA_DIR):
                                  dof = 12)
 
     # iterate through all files and apply the transformation matrix calculated above between the patient's t1  and mni space
-    for i_img in PERFUSION_FILES+ MASK_FILES: 
+    for i_img in PERFUSION_FILES+ MASK_FILES:
         path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + i_img + ".nii.gz")
         if not os.path.isfile(path_out_file):
             try:
@@ -357,7 +356,7 @@ def run_ct_coreg(DATA_DIR):
                 #applyxfm.inputs.reference = PATH_T1_BRAINMASK
                 applyxfm.inputs.reference = PATH_MNI_BRAINMASK
                 applyxfm.inputs.apply_xfm = True
-                result = applyxfm.run()            
+                result = applyxfm.run()
             except:
                 # print("Failure at processing file %s" % path_out_file)
                 pass
@@ -376,7 +375,7 @@ def run_ct_coreg(DATA_DIR):
     if os.path.exists(PATH_RBV):
         vol_rbv = nb.load(PATH_RBV)
         np_vol_rbv = vol_rbv.get_fdata()
-    
+
     PATH_RBF = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_CBFD.nii.gz' )
     if os.path.exists(PATH_RBF):
         vol_rbf = nb.load(PATH_RBF)
@@ -391,7 +390,7 @@ def run_ct_coreg(DATA_DIR):
         np_vol_mask[np_vol_tmax < 6] = 0
         np_vol_mask[np_vol_rbv < 0] = 0
         np_vol_mask[np_vol_rbf < 0]  = 0
-        
+
     PATH_MASK_PENUMBRA46 = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl_4-6.nii.gz")
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA46):
@@ -400,7 +399,7 @@ def run_ct_coreg(DATA_DIR):
         np_vol_mask_p46 = vol_mask_penumbra46.get_fdata()
         np_vol_mask_p46[np_vol_tmax < 6] = 0
         np_vol_mask_p46[np_vol_rbv < 0] = 0
-        np_vol_mask_p46[np_vol_rbf < 0]  = 0    
+        np_vol_mask_p46[np_vol_rbf < 0]  = 0
 
     PATH_MASK_CORE = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_core_v1.nii.gz")
     if os.path.exists(PATH_MASK_CORE):
@@ -416,10 +415,10 @@ def run_ct_coreg(DATA_DIR):
     values_p46 = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
     values_core = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
 
-    # index = [get_name_of_folder(DATA_DIR) + str(os.path.basename(PATH_CBF_PERF)[4:-7])] 
-    index = [get_name_of_folder(DATA_DIR)] 
+    # index = [get_name_of_folder(DATA_DIR) + str(os.path.basename(PATH_CBF_PERF)[4:-7])]
+    index = [get_name_of_folder(DATA_DIR)]
 
-    for i_seq in SELECTED_TO_ANALYSIS:    
+    for i_seq in SELECTED_TO_ANALYSIS:
         list_calculated = [i_seq+'_mean',
                         i_seq+'_std',
                         i_seq+'_min',
@@ -428,21 +427,23 @@ def run_ct_coreg(DATA_DIR):
                         i_seq+'_q1',
                         i_seq+'_q3']
         columns = columns + list_calculated
-        
+
         path_infile = os.path.join(DATA_DIR,"coregt1", "coregt1_" + i_seq + '.nii.gz')
 
         if os.path.isfile(path_infile):
             vol = nb.load(path_infile)
             np_vol = vol.get_fdata()
-            
+
             if os.path.exists(PATH_MASK_PENUMBRA):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked = np.zeros(np_vol_mask.shape)
                 np.putmask(np_vol_masked, np_vol_mask, np_vol)
-                roi = np_vol_masked[np_vol_mask>0.5]       
+                roi = np_vol_masked[np_vol_mask>0.5]
                 seq_values = [np.mean(roi), np.std(roi), np.min(roi), np.max(roi),np.median(roi),np.percentile(roi,25),np.percentile(roi,75) ]
                 print(seq_values)
-                
+                values = values + seq_values
+
+
             if os.path.exists(PATH_MASK_PENUMBRA46):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked_p46  = np.zeros(np_vol_mask_p46 .shape)
@@ -450,32 +451,32 @@ def run_ct_coreg(DATA_DIR):
                 roi_p46  = np_vol_masked_p46 [np_vol_mask_p46 >0.5]
                 seq_values_p46 = [np.mean(roi_p46), np.std(roi_p46), np.min(roi_p46), np.max(roi_p46),np.median(roi_p46),np.percentile(roi_p46,25),np.percentile(roi_p46,75) ]
                 print(seq_values_p46)
-                
+                values_p46 = values_p46 + seq_values_p46
+
             if os.path.exists(PATH_MASK_CORE):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked_core = np.zeros(np_vol_mask_core.shape)
                 np.putmask(np_vol_masked_core , np_vol_mask_core , np_vol)
-                roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]      
+                roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]
                 seq_values_core = [np.mean(roi_core ), np.std(roi_core ), np.min(roi_core ), np.max(roi_core ),np.median(roi_core ),np.percentile(roi_core ,25),np.percentile(roi_core ,75) ]
                 print(seq_values_core )
-	
-            if os.path.exists(PATH_MASK_PENUMBRA):
-                values = values + seq_value
+                values_core = values_core + seq_values_core
 
-            if os.path.exists(PATH_MASK_PENUMBRA46):
-                values_p46 = values_p46 + seq_values_p46
-
-            if os.path.exists(PATH_MASK_CORE):
-                values_core = values_core + seq_values_core                
         else:
             # seq_values = np.full([1, len(list_calculated)],1)
             # seq_values = np.full([1, len(list_calculated)], 0)
             if os.path.exists(PATH_MASK_PENUMBRA):
                 seq_values = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values = values + seq_values
+
             if os.path.exists(PATH_MASK_PENUMBRA46):
                 seq_values_p46 = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values_p46 = values_p46 + seq_values_p46
+
             if os.path.exists(PATH_MASK_CORE):
                 seq_values_core = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values_core = values_core + seq_values_core
+
 
 
         # values to the sequence
@@ -502,7 +503,7 @@ def run_ct_coreg(DATA_DIR):
             df_core.to_csv(PATH_GLOBAL_CSV_CT_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_CORE)))
 
 
-    
+
 def run_mr_coreg(DATA_DIR):
     print("Running mr coregistration to mri in study: %s" % DATA_DIR)
     """
@@ -523,11 +524,11 @@ def run_mr_coreg(DATA_DIR):
     NIFTI_FILES = ["FLAIR"]
     BOLD_FILES = ["CVRmap"]
     SELECTED_TO_ANALYSIS = ["rBF", "rBV", "TMAX" ,"B1000","ADC","IVIM_TRACEW_5","IVIM_ADC","CVRmap","FLAIR"]
-    
+
     # mri convert all the files from "original" folder and save to "resliced" folder
     os.chdir(DATA_DIR)
     mc = MRIConvert()
-    path = "./original" 
+    path = "./original"
     try:
         os.chdir(path)
         print("Current working directory: {0}".format(os.getcwd()))
@@ -543,7 +544,7 @@ def run_mr_coreg(DATA_DIR):
     if not os.path.isdir(path_dir_resliced):
         os.mkdir(path_dir_resliced)
 
-    for i_img in PERFUSION_FILES + MASK_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES: 
+    for i_img in PERFUSION_FILES + MASK_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES:
         path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
         if not os.path.isfile(path_out_file):
             try:
@@ -559,9 +560,9 @@ def run_mr_coreg(DATA_DIR):
         else:
             # print("File %s already exist " % path_out_file)
             pass
-            
-    
-    # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"] 
+
+
+    # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"]
     os.chdir(DATA_DIR)
     path = os.path.join(DATA_DIR, dir_resliced_name)
     try:
@@ -598,7 +599,7 @@ def run_mr_coreg(DATA_DIR):
                                      dof = 6)
 
         # iterate through perfusion maps
-        for i_img in DWI_FILES : 
+        for i_img in DWI_FILES :
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
             if not os.path.isfile(path_out_file):
                 try:
@@ -610,7 +611,7 @@ def run_mr_coreg(DATA_DIR):
                     applyxfm.inputs.out_file = path_out_file
                     applyxfm.inputs.reference = PATH_T1_BRAINMASK
                     applyxfm.inputs.apply_xfm = True
-                    result = applyxfm.run()            
+                    result = applyxfm.run()
                 except:
                     # print("Failure at processing file %s" % path_out_file)
                     pass
@@ -638,7 +639,7 @@ def run_mr_coreg(DATA_DIR):
                                      dof = 6)
 
         # iterate through perfusion maps
-        for i_img in PERFUSION_FILES + MASK_FILES : 
+        for i_img in PERFUSION_FILES + MASK_FILES :
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
             if not os.path.isfile(path_out_file):
                 try:
@@ -650,7 +651,7 @@ def run_mr_coreg(DATA_DIR):
                     applyxfm.inputs.out_file = path_out_file
                     applyxfm.inputs.reference = PATH_T1_BRAINMASK
                     applyxfm.inputs.apply_xfm = True
-                    result = applyxfm.run()            
+                    result = applyxfm.run()
                 except:
                     # print("Failure at processing file %s" % i_img)
                     pass
@@ -677,7 +678,7 @@ def run_mr_coreg(DATA_DIR):
                                          dof = 6)
         except:
             print("File %s could not be processed" % i_img)
-            
+
     # registrate bold file with inverse transformation matrix
     for i_img in BOLD_FILES:
         #try:
@@ -696,7 +697,7 @@ def run_mr_coreg(DATA_DIR):
             applyxfm.inputs.out_file = path_out_file
             applyxfm.inputs.reference = PATH_T1_BRAINMASK
             applyxfm.inputs.apply_xfm = True
-            result = applyxfm.run()   
+            result = applyxfm.run()
 
 
         except:
@@ -704,8 +705,8 @@ def run_mr_coreg(DATA_DIR):
 
 
     os.chdir("..")
-    
-       
+
+
     # coregister all the NIFTI_FILES to MNI wiht transformation matrix between t1 and MNI152
     os.chdir(DATA_DIR)
     path = "./" + dir_coreg_name
@@ -738,7 +739,7 @@ def run_mr_coreg(DATA_DIR):
                                  dof = 12)
 
     # iterate through all files and apply the transformation matrix calculated above between the patient's t1  and mni space
-    for i_img in PERFUSION_FILES+ MASK_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES : 
+    for i_img in PERFUSION_FILES+ MASK_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES :
         path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + i_img + ".nii.gz")
         if not os.path.isfile(path_out_file):
             try:
@@ -751,7 +752,7 @@ def run_mr_coreg(DATA_DIR):
                 #applyxfm.inputs.reference = PATH_T1_BRAINMASK
                 applyxfm.inputs.reference = PATH_MNI_BRAINMASK
                 applyxfm.inputs.apply_xfm = True
-                result = applyxfm.run()            
+                result = applyxfm.run()
             except:
                 # print("Failure at processing file %s" % path_out_file)
                 pass
@@ -771,7 +772,7 @@ def run_mr_coreg(DATA_DIR):
     if os.path.exists(PATH_RBV):
         vol_rbv = nb.load(PATH_RBV)
         np_vol_rbv = vol_rbv.get_fdata()
-    
+
     PATH_RBF = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_rBF.nii.gz' )
     if os.path.exists(PATH_RBF):
         vol_rbf = nb.load(PATH_RBF)
@@ -786,7 +787,7 @@ def run_mr_coreg(DATA_DIR):
         np_vol_mask[np_vol_tmax < 6] = 0
         np_vol_mask[np_vol_rbv < 0] = 0
         np_vol_mask[np_vol_rbf < 0]  = 0
-        
+
     PATH_MASK_PENUMBRA46 = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl_4-6.nii.gz")
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA46):
@@ -795,7 +796,7 @@ def run_mr_coreg(DATA_DIR):
         np_vol_mask_p46 = vol_mask_penumbra46.get_fdata()
         np_vol_mask_p46[np_vol_tmax < 6] = 0
         np_vol_mask_p46[np_vol_rbv < 0] = 0
-        np_vol_mask_p46[np_vol_rbf < 0]  = 0    
+        np_vol_mask_p46[np_vol_rbf < 0]  = 0
 
     PATH_MASK_CORE = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_core_v1.nii.gz")
     if os.path.exists(PATH_MASK_CORE):
@@ -811,10 +812,10 @@ def run_mr_coreg(DATA_DIR):
     values_p46 = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
     values_core = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
 
-    # index = [get_name_of_folder(DATA_DIR) + str(os.path.basename(PATH_CBF_PERF)[4:-7])] 
-    index = [get_name_of_folder(DATA_DIR)] 
+    # index = [get_name_of_folder(DATA_DIR) + str(os.path.basename(PATH_CBF_PERF)[4:-7])]
+    index = [get_name_of_folder(DATA_DIR)]
 
-    for i_seq in SELECTED_TO_ANALYSIS:    
+    for i_seq in SELECTED_TO_ANALYSIS:
         list_calculated = [i_seq+'_mean',
                         i_seq+'_std',
                         i_seq+'_min',
@@ -823,22 +824,22 @@ def run_mr_coreg(DATA_DIR):
                         i_seq+'_q1',
                         i_seq+'_q3']
         columns = columns + list_calculated
-        
+
         path_infile = os.path.join(DATA_DIR,"coregt1", "coregt1_" + i_seq + '.nii.gz')
 
         if os.path.isfile(path_infile):
             vol = nb.load(path_infile)
             np_vol = vol.get_fdata()
-            
+
             if os.path.exists(PATH_MASK_PENUMBRA):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked = np.zeros(np_vol_mask.shape)
                 np.putmask(np_vol_masked, np_vol_mask, np_vol)
-                roi = np_vol_masked[np_vol_mask>0.5]       
+                roi = np_vol_masked[np_vol_mask>0.5]
                 seq_values = [np.mean(roi), np.std(roi), np.min(roi), np.max(roi),np.median(roi),np.percentile(roi,25),np.percentile(roi,75) ]
                 print(seq_values)
                 values = values + seq_values
-                
+
 
             if os.path.exists(PATH_MASK_PENUMBRA46):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
@@ -848,12 +849,12 @@ def run_mr_coreg(DATA_DIR):
                 seq_values_p46 = [np.mean(roi_p46), np.std(roi_p46), np.min(roi_p46), np.max(roi_p46),np.median(roi_p46),np.percentile(roi_p46,25),np.percentile(roi_p46,75) ]
                 print(seq_values_p46)
                 values_p46 = values_p46 + seq_values_p46
-                
+
             if os.path.exists(PATH_MASK_CORE):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked_core = np.zeros(np_vol_mask_core.shape)
                 np.putmask(np_vol_masked_core , np_vol_mask_core , np_vol)
-                roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]      
+                roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]
                 seq_values_core = [np.mean(roi_core ), np.std(roi_core ), np.min(roi_core ), np.max(roi_core ),np.median(roi_core ),np.percentile(roi_core ,25),np.percentile(roi_core ,75) ]
                 print(seq_values_core )
                 values_core = values_core + seq_values_core
@@ -863,10 +864,16 @@ def run_mr_coreg(DATA_DIR):
             # seq_values = np.full([1, len(list_calculated)], 0)
             if os.path.exists(PATH_MASK_PENUMBRA):
                 seq_values = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values = values + seq_values
+
             if os.path.exists(PATH_MASK_PENUMBRA46):
                 seq_values_p46 = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values_p46 = values_p46 + seq_values_p46
+
             if os.path.exists(PATH_MASK_CORE):
                 seq_values_core = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
+                values_core = values_core + seq_values_core
+
 
         # values to the sequence
         if os.path.exists(PATH_MASK_PENUMBRA):
@@ -891,39 +898,57 @@ def run_mr_coreg(DATA_DIR):
             df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
 
 
-          
+
 if __name__ == '__main__':
 
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
-    # PATH_GLOBAL_CSV_CT_MRI = PROJECT_DIR
-    #DATA_DIR = "/media/nraresearch/ben_usz/crpp_reperfusion_failure"
-    #DATA_DIR = os.getcwd()
-    "/media/nraresearch/ben_usz/crpp_reperfusion_failure/CRPP1_Test/crpp1_baseline_10102019"
-    """
-    PATH_GLOBAL_CSV_CT = os.path.join(DATA_DIR, '..','..','values_all_baseline.csv')
-    PATH_GLOBAL_CSV_CT_MRI = os.path.join(DATA_DIR, '..','..','values_all.csv')
-    """
 
+    # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
+    PROJECT_DIR = os.getcwd()
 
-    for i_patient in [ name for name in os.listdir(PROJECT_DIR) if os.path.isdir(os.path.join(PROJECT_DIR, name)) and name.startswith('CRPP') ]:
-        print("processing patient: %s" % i_patient)
-        patient_dir_path = os.path.join(PROJECT_DIR, i_patient)
+    list_patients = [5,23,35,43]
+    list_patients = [5]
 
-        list_studies = [ name for name in os.listdir(patient_dir_path) if os.path.isdir(os.path.join(patient_dir_path, name)) and name.startswith('crpp') ]
-        for i_dir in list_studies:
-            print("processing study: %s" % i_dir)
-            i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
-            match = nativ_in_folder(i_dirpath)
-            if match==1:
-                try:
+    if list_patients:
+        for i in range(len(list_patients)):
+            i_patient = "CRPP" +str(list_patients[i])
+
+            patient_dir_path = os.path.join(PROJECT_DIR, i_patient)
+            print("processing patient %s " %patient_dir_path)
+
+            list_studies = [ name for name in os.listdir(patient_dir_path) if os.path.isdir(os.path.join(patient_dir_path, name)) and name.startswith('crpp') ]
+            for i_dir in list_studies:
+                i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
+                match = nativ_in_folder(i_dirpath)
+                if match==1:
+                    print("processing CT study: %s" % i_dir)
                     run_ct_coreg(i_dirpath)
-                except:
-                    print("Crush during processing %s" % i_patient)
-                
-            else:
-                try:
+
+                else:
+                    print("processing MR study: %s" % i_dir)
                     run_mr_coreg(i_dirpath)
-                except:
-                    print("Crush during processing %s" % i_patient)              
+                    print("Crush during processing %s" % i_patient)
+    else:
+        for i_patient in [ name for name in os.listdir(PROJECT_DIR) if os.path.isdir(os.path.join(PROJECT_DIR, name)) and name.startswith('CRPP') ]:
+            print("processing patient: %s" % i_patient)
+            patient_dir_path = os.path.join(PROJECT_DIR, i_patient)
+
+            list_studies = [ name for name in os.listdir(patient_dir_path) if os.path.isdir(os.path.join(patient_dir_path, name)) and name.startswith('crpp') ]
+            for i_dir in list_studies:
+                print("processing study: %s" % i_dir)
+                i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
+                match = nativ_in_folder(i_dirpath)
+
+                if match==1:
+                    try:
+                        run_ct_coreg(i_dirpath)
+                    except:
+                        print("Crush during processing %s" % i_patient)
+
+                else:
+                    try:
+                        run_mr_coreg(i_dirpath)
+                    except:
+                        print("Crush during processing %s" % i_patient)
 
