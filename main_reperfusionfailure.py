@@ -281,7 +281,7 @@ def run_ct_coreg(DATA_DIR):
                     """
                 except:
                     # print("Failure at processing file %s" % i_img)
-                    pass
+                    print("ANTS coregistration at sequence: %s crushed" % i_img)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
@@ -385,30 +385,27 @@ def run_ct_coreg(DATA_DIR):
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA):
         vol_mask = nb.load(PATH_MASK_PENUMBRA)
-        vol_mask.shape
         np_vol_mask = vol_mask.get_fdata()
-        np_vol_mask[np_vol_tmax < 6] = 0
-        np_vol_mask[np_vol_rbv < 0] = 0
-        np_vol_mask[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask[np_vol_tmax < 6] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask[np_vol_rbf < 0]  = 0
 
     PATH_MASK_PENUMBRA46 = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl_4-6.nii.gz")
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA46):
         vol_mask_penumbra46 = nb.load(PATH_MASK_PENUMBRA46)
-        vol_mask.shape
         np_vol_mask_p46 = vol_mask_penumbra46.get_fdata()
-        np_vol_mask_p46[np_vol_tmax < 6] = 0
-        np_vol_mask_p46[np_vol_rbv < 0] = 0
-        np_vol_mask_p46[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask_p46[np_vol_tmax < 4] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask_p46[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask_p46[np_vol_rbf < 0]  = 0
 
     PATH_MASK_CORE = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_core_v1.nii.gz")
     if os.path.exists(PATH_MASK_CORE):
         vol_mask_core = nb.load(PATH_MASK_CORE)
-        vol_mask.shape
         np_vol_mask_core = vol_mask_core.get_fdata()
-        np_vol_mask_core[np_vol_tmax < 6] = 0
-        np_vol_mask_core[np_vol_rbv < 0] = 0
-        np_vol_mask_core[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask_core[np_vol_tmax < 6] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask_core[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask_core[np_vol_rbf < 0]  = 0
 
     columns = ['patient','visit']
     values = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
@@ -764,9 +761,9 @@ def run_mr_coreg(DATA_DIR):
     #  read the coregistered CBF file
     PATH_TMAX = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_TMAX.nii.gz' )
     #if os.path.exists(PATH_TMAX):
-    print("Tmax exist")
-    vol_tmax = nb.load(PATH_TMAX)
-    np_vol_tmax = vol_tmax.get_fdata()
+    if os.path.exists(PATH_TMAX):
+        vol_tmax = nb.load(PATH_TMAX)
+        np_vol_tmax = vol_tmax.get_fdata()
 
     PATH_RBV = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_rBV.nii.gz' )
     if os.path.exists(PATH_RBV):
@@ -790,31 +787,28 @@ def run_mr_coreg(DATA_DIR):
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA):
         vol_mask = nb.load(PATH_MASK_PENUMBRA)
-        vol_mask.shape
         np_vol_mask = vol_mask.get_fdata()
-        np_vol_mask[np_vol_tmax < 6] = 0
-        np_vol_mask[np_vol_rbv < 0] = 0
-        np_vol_mask[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask[np_vol_tmax < 6] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask[np_vol_rbf < 0]  = 0
 
     PATH_MASK_PENUMBRA46 = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl_4-6.nii.gz")
     # load the penumbra masks
     if os.path.exists(PATH_MASK_PENUMBRA46):
         vol_mask_penumbra46 = nb.load(PATH_MASK_PENUMBRA46)
-        vol_mask.shape
         np_vol_mask_p46 = vol_mask_penumbra46.get_fdata()
-        np_vol_mask_p46[np_vol_tmax < 4] = 0
-        np_vol_mask_p46[np_vol_rbv < 0] = 0
-        np_vol_mask_p46[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask_p46[np_vol_tmax < 4] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask_p46[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask_p46[np_vol_rbf < 0]  = 0
 
     PATH_MASK_CORE = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_core_v1.nii.gz")
     if os.path.exists(PATH_MASK_CORE):
         vol_mask_core = nb.load(PATH_MASK_CORE)
-        vol_mask.shape
         np_vol_mask_core = vol_mask_core.get_fdata()
-        np_vol_mask_core[np_vol_tmax < 6] = 0
-        np_vol_mask_core[np_vol_rbv < 0] = 0
-        np_vol_mask_core[np_vol_rbf < 0]  = 0
-        np_vol_mask_core[np_vol_adc > 6]  = 0
+        if os.path.exists(PATH_TMAX): anp_vol_mask_core[np_vol_tmax < 6] = 0
+        if os.path.exists(PATH_RBV): np_vol_mask_core[np_vol_rbv < 0] = 0
+        if os.path.exists(PATH_RBF): np_vol_mask_core[np_vol_rbf < 0]  = 0
+        if os.path.exists(PATH_ADC): np_vol_mask_core[np_vol_adc > 6]  = 0
 
     columns = ['patient','visit']
     values = [get_name_of_patient(DATA_DIR), get_name_of_visit(DATA_DIR) ]
@@ -916,8 +910,7 @@ if __name__ == '__main__':
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
 
-    list_patients = [5,23,35,43]
-    list_patients = [5]
+    list_patients = [5,30,35,43]
 
     if list_patients:
         for i in range(len(list_patients)):
