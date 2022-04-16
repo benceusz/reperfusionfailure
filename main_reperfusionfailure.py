@@ -126,8 +126,8 @@ def run_bet(input_file_path):
     if not os.path.isfile(path_outfile_bet):
         result = btr.run(in_file= input_file_path, out_file=path_outfile_bet, frac=0.7 , mask = True)
     else:
-        print("Bet file already exists")
-
+        # print("Bet file already exists")
+        pass
     # path of the binary mask file
     _filename_mask = 'bet_' + os.path.basename(input_file_path)[:-7] + '_mask.nii.gz'
     path_betmask = os.path.join(OUTPUT_FOLDER, _filename_mask)
@@ -152,7 +152,8 @@ def save_nifti(np_array, filename, output_folder,  original_img ):
         nb.save(nii_img, filepath)
         print('Image has been saved to {}'.format(filepath))
     else:
-        print("Image already exists!")
+        # print("Image already exists!")
+        pass
 
 def nativ_in_folder(path_dir, filename = "nativ.nii.gz"):
     match = 0
@@ -229,6 +230,10 @@ def run_ct_coreg(DATA_DIR):
 
     #PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
     PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+    if not os.path.isfile(PATH_BASE_PERF):
+        # sometime file is calle tMIP instead of MIP
+        PATH_BASE_PERF = os.path.abspath("./t" +tag_base_file +".nii.gz")
+
 
     if os.path.isfile(PATH_BASE_PERF):
 
@@ -243,12 +248,13 @@ def run_ct_coreg(DATA_DIR):
                                      out_matrix_file= path_matrix_perf,
                                      dof = 6)
         """
-        if not os.path.isfile(path_out_file):
-            mr_t1 = ants.image_read(PATH_T1_BRAINMASK)
-            perf_mip =  ants.image_read(PATH_BASE_PERF)
-            registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Rigid' )
-            path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + tag_base_file  + ".nii.gz")
-            ants.image_write(registration['warpedmovout'], path_out_file)
+        # if not os.path.isfile(path_out_file):
+        print("Linear coregistration of sequence %s with ANTS " % PATH_BASE_PERF)
+        mr_t1 = ants.image_read(PATH_T1_BRAINMASK)
+        perf_mip =  ants.image_read(PATH_BASE_PERF)
+        registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Rigid' )
+        path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + tag_base_file  + ".nii.gz")
+        ants.image_write(registration['warpedmovout'], path_out_file)
 
         """
         txfile = ants.affine_initializer( fi, mi )
@@ -260,7 +266,7 @@ def run_ct_coreg(DATA_DIR):
 
             if not os.path.isfile(path_out_file):
                 try:
-                    print("processing file %s" % i_img)
+                    print("Apply matrix transform of file %s with ANTS" % i_img)
 
                     path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
                     moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
@@ -281,7 +287,7 @@ def run_ct_coreg(DATA_DIR):
                     """
                 except:
                     # print("Failure at processing file %s" % i_img)
-                    print("ANTS coregistration at sequence: %s crushed" % i_img)
+                    print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
@@ -427,9 +433,10 @@ def run_ct_coreg(DATA_DIR):
 
         path_infile = os.path.join(DATA_DIR,"coregt1", "coregt1_" + i_seq + '.nii.gz')
 
-        if os.path.isfile(path_infile):
+        try: #if os.path.isfile(path_infile):
             vol = nb.load(path_infile)
-            np_vol = vol.get_fdata()
+            np_vol = vol.get_fdata
+            print("Calculating values  for sequence %s" % i_seq )
 
             if os.path.exists(PATH_MASK_PENUMBRA):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
@@ -459,7 +466,7 @@ def run_ct_coreg(DATA_DIR):
                 print(seq_values_core )
                 values_core = values_core + seq_values_core
 
-        else:
+        except: #else:
             # seq_values = np.full([1, len(list_calculated)],1)
             # seq_values = np.full([1, len(list_calculated)], 0)
             if os.path.exists(PATH_MASK_PENUMBRA):
@@ -653,7 +660,8 @@ def run_mr_coreg(DATA_DIR):
                     # print("Failure at processing file %s" % i_img)
                     pass
             else:
-                print("File %s already exist " % path_out_file)
+                # print("File %s already exist " % path_out_file)
+                pass
     else:
         print("rBV baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
@@ -662,6 +670,9 @@ def run_mr_coreg(DATA_DIR):
     for i_img in NIFTI_FILES:
         try:
             path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
+            if os.path.isfile(path_infile):
+                print("FAILURE: File %s does not exist. Break" % i_img)
+                break
             # path_matrix_file = os.path.join( os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img +"_2_t1matrix.mat")
             path_matrix_file = os.path.join( os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img +"_2_t1matrix.mat")
 
@@ -674,7 +685,7 @@ def run_mr_coreg(DATA_DIR):
                                          out_matrix_file= path_matrix_file,
                                          dof = 6)
         except:
-            print("File %s could not be processed" % i_img)
+            print("FAILURE: File %s could not be processed" % i_img)
 
     # registrate bold file with inverse transformation matrix
     for i_img in BOLD_FILES:
@@ -698,7 +709,7 @@ def run_mr_coreg(DATA_DIR):
 
 
         except:
-            print("File %s could not be processed" % i_img)
+            print("FAILURE: File %s could not be processed" % i_img)
 
 
     os.chdir("..")
@@ -805,7 +816,7 @@ def run_mr_coreg(DATA_DIR):
     if os.path.exists(PATH_MASK_CORE):
         vol_mask_core = nb.load(PATH_MASK_CORE)
         np_vol_mask_core = vol_mask_core.get_fdata()
-        if os.path.exists(PATH_TMAX): anp_vol_mask_core[np_vol_tmax < 6] = 0
+        if os.path.exists(PATH_TMAX): np_vol_mask_core[np_vol_tmax < 6] = 0
         if os.path.exists(PATH_RBV): np_vol_mask_core[np_vol_rbv < 0] = 0
         if os.path.exists(PATH_RBF): np_vol_mask_core[np_vol_rbf < 0]  = 0
         if os.path.exists(PATH_ADC): np_vol_mask_core[np_vol_adc > 6]  = 0
@@ -830,10 +841,10 @@ def run_mr_coreg(DATA_DIR):
 
         path_infile = os.path.join(DATA_DIR,"coregt1", "coregt1_" + i_seq + '.nii.gz')
 
-        if os.path.isfile(path_infile):
+        try: #if os.path.isfile(path_infile):
             vol = nb.load(path_infile)
             np_vol = vol.get_fdata()
-
+            print("Calculating values on sequence %s" % i_seq)
             if os.path.exists(PATH_MASK_PENUMBRA):
                 # apply left hemisphere mask on flirt_cbf_to_bett1
                 np_vol_masked = np.zeros(np_vol_mask.shape)
@@ -862,7 +873,7 @@ def run_mr_coreg(DATA_DIR):
                 print(seq_values_core )
                 values_core = values_core + seq_values_core
 
-        else:
+        except: #else:
             # seq_values = np.full([1, len(list_calculated)],1)
             # seq_values = np.full([1, len(list_calculated)], 0)
             if os.path.exists(PATH_MASK_PENUMBRA):
@@ -876,7 +887,7 @@ def run_mr_coreg(DATA_DIR):
             if os.path.exists(PATH_MASK_CORE):
                 seq_values_core = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
                 values_core = values_core + seq_values_core
-
+            print("Failure at processing values in sequence %s. filled with nans" % i_seq)
 
     # values to the sequence
     if os.path.exists(PATH_MASK_PENUMBRA):
@@ -901,6 +912,18 @@ def run_mr_coreg(DATA_DIR):
         df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
 
 
+def delete_duplications(PATH_CSV):
+    """
+    PATH_CSV: Path of the csv file.
+    function finds the duplicated lines (by index) in the csv file stored in PATH_CSV and keeps only the last occurency.
+    sorting in abc order
+    """
+    df = pd.read_csv(PATH_CSV, sep="\t or ,")
+    df.drop_duplicates(subset=None, inplace=True, keep = 'last')
+    df.sort_values(df.columns[0])
+    df.to_csv(PATH_CSV, index=False, mode='w+', sep = ',')
+    print("Duplicates have been deleted and File has been saved in %s "% PATH_CSV)
+
 
 if __name__ == '__main__':
 
@@ -910,7 +933,7 @@ if __name__ == '__main__':
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
 
-    list_patients = [5,30,35,43]
+    list_patients = [1]
 
     if list_patients:
         for i in range(len(list_patients)):
@@ -953,4 +976,12 @@ if __name__ == '__main__':
                         run_mr_coreg(i_dirpath)
                     except:
                         print("Crush during processing %s" % i_patient)
+
+    # delete duplications from global csv files
+    if os.path.exists(PATH_GLOBAL_CSV_CT_PENUMBRA): delete_duplications(PATH_GLOBAL_CSV_CT_PENUMBRA)
+    if os.path.exists(PATH_GLOBAL_CSV_MRI_PENUMBRA): delete_duplications(PATH_GLOBAL_CSV_MRI_PENUMBRA)
+    if os.path.exists(PATH_GLOBAL_CSV_CT_P46): delete_duplications(PATH_GLOBAL_CSV_CT_P46)
+    if os.path.exists(PATH_GLOBAL_CSV_MRI_P46): delete_duplications(PATH_GLOBAL_CSV_MRI_P46)
+    if os.path.exists(PATH_GLOBAL_CSV_CT_CORE): delete_duplications(PATH_GLOBAL_CSV_CT_CORE)
+    if os.path.exists(PATH_GLOBAL_CSV_MRI_CORE): delete_duplications(PATH_GLOBAL_CSV_MRI_CORE)
 
