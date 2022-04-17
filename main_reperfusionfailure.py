@@ -933,7 +933,7 @@ if __name__ == '__main__':
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
 
-    list_patients = [1]
+    list_patients = []
 
     if list_patients:
         for i in range(len(list_patients)):
