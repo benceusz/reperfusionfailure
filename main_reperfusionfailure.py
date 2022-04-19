@@ -435,10 +435,11 @@ def run_ct_coreg(DATA_DIR):
         try:
             if os.path.isfile(path_infile): # try >TODO
                 vol = nb.load(path_infile)
-                np_vol = vol.get_fdata
+                np_vol = vol.get_fdata()
                 print("Calculating values  for sequence %s" % i_seq )
 
                 if os.path.exists(PATH_MASK_PENUMBRA):
+                    print("penumbra exist")
                     try:
                         # apply left hemisphere mask on flirt_cbf_to_bett1
                         np_vol_masked = np.zeros(np_vol_mask.shape)
@@ -476,7 +477,12 @@ def run_ct_coreg(DATA_DIR):
                     except:
                         seq_values_core = [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan ]
                         values_core = values_core + seq_values_core
-
+                print("Values:")
+                print(values)
+                print("values p46")
+                print(values_p46)
+                print("core values")
+                print(values_core)
             else: #except: #else:
                 # seq_values = np.full([1, len(list_calculated)],1)
                 # seq_values = np.full([1, len(list_calculated)], 0)
@@ -919,7 +925,6 @@ def run_mr_coreg(DATA_DIR):
     if os.path.exists(PATH_MASK_PENUMBRA):
         df_penumbra= pd.DataFrame(index=index, columns=columns)
         print("values :")
-        print(values)
         df_penumbra.loc[index[0]] = values
         PATH_CSV_LOCAL = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_penumbra.csv')
         df_penumbra.to_csv(PATH_CSV_LOCAL, index=True, mode='w+', sep = ',')
@@ -927,10 +932,9 @@ def run_mr_coreg(DATA_DIR):
 
     if os.path.exists(PATH_MASK_PENUMBRA46):
         df_p46= pd.DataFrame(index=index, columns=columns)
-        print(values_p46)
         df_p46.loc[index[0]] = values_p46
 
-        PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'._p46.csv')
+        PATH_CSV_LOCAL_p46 = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_p46.csv')
         df_p46.to_csv(PATH_CSV_LOCAL_p46, index=True, mode='w+', sep = ',')
         df_p46.to_csv(PATH_GLOBAL_CSV_MRI_P46, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_P46)))
 
@@ -963,7 +967,7 @@ if __name__ == '__main__':
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
 
-    list_patients = [1]
+    list_patients = []
 
     if list_patients:
         for i in range(len(list_patients)):
@@ -1016,4 +1020,3 @@ if __name__ == '__main__':
     if os.path.exists(PATH_GLOBAL_CSV_CT_CORE): delete_duplications(PATH_GLOBAL_CSV_CT_CORE)
     if os.path.exists(PATH_GLOBAL_CSV_MRI_CORE): delete_duplications(PATH_GLOBAL_CSV_MRI_CORE)
     """
-
