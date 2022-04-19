@@ -191,7 +191,7 @@ def run_ct_coreg(DATA_DIR):
     # specify all the possible sequence names that the algorihtm should iterate on
     # more names can be listed. Only exact matches will be processed
     PERFUSION_FILES = [ "CBFD","CBVD","MIP", "MTTD", "TMAXD","TTDD", "TTPM"]
-    MASK_FILES = ["mask_core","mask_core_v1", "mask_penumbra", "mask_penumbra_bl", "mask_penumbra_v1", "mask_penumbra_bl_4-6"]
+    MASK_FILES = ["mask_core_v1", "mask_penumbra_bl", "mask_penumbra_bl_4-6"]
     DWI_FILES = []
     NIFTI_FILES = []
     BOLD_FILES = []
@@ -253,6 +253,8 @@ def run_ct_coreg(DATA_DIR):
         mr_t1 = ants.image_read(PATH_T1_BRAINMASK)
         perf_mip =  ants.image_read(PATH_BASE_PERF)
         registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Rigid' )
+        #registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Affine' ) # TODO
+
         path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + tag_base_file  + ".nii.gz")
         ants.image_write(registration['warpedmovout'], path_out_file)
 
@@ -261,7 +263,7 @@ def run_ct_coreg(DATA_DIR):
         tmatrix = ants.read_transform(txfile, dimension=2)
         """
         # iterate through perfusion maps
-        for i_img in PERFUSION_FILES + MASK_FILES :
+        for i_img in PERFUSION_FILES:
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
 
             if not os.path.isfile(path_out_file):
@@ -274,17 +276,26 @@ def run_ct_coreg(DATA_DIR):
                     mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'nearestNeighbor', transformlist=registration['fwdtransforms'] )
                     ants.image_write(mywarpedimage, path_out_file)
 
-                    """
-                    path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-                    print("Processing {}".format(i_img))
-                    applyxfm = fsl.preprocess.ApplyXFM()
-                    applyxfm.inputs.in_file = path_infile
-                    applyxfm.inputs.in_matrix_file = path_matrix_perf
-                    applyxfm.inputs.out_file = path_out_file
-                    applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                    applyxfm.inputs.apply_xfm = True
-                    result = applyxfm.run()
-                    """
+                except:
+                    # print("Failure at processing file %s" % i_img)
+                    print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
+            else:
+                # print("File %s already exist " % path_out_file)
+                pass
+
+        for i_img in MASK_FILES:
+            path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
+
+            if not os.path.isfile(path_out_file):
+                try:
+                    print("Apply matrix transform for masks %s with ANTS" % i_img)
+
+                    path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
+                    moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
+
+                    mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'genericLabel', transformlist=registration['fwdtransforms'] )
+                    ants.image_write(mywarpedimage, path_out_file)
+
                 except:
                     # print("Failure at processing file %s" % i_img)
                     print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
@@ -470,7 +481,9 @@ def run_ct_coreg(DATA_DIR):
                     try:
                         np_vol_masked_core = np.zeros(np_vol_mask_core.shape)
                         np.putmask(np_vol_masked_core , np_vol_mask_core , np_vol)
-                        roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]
+                        #roi_core  = np_vol_masked_core [np_vol_mask_core >0.5]
+                        roi_core  = np_vol_masked_core [np_vol_mask_core >0] # TODO
+
                         seq_values_core = [np.mean(roi_core ), np.std(roi_core ), np.min(roi_core ), np.max(roi_core ),np.median(roi_core ),np.percentile(roi_core ,25),np.percentile(roi_core ,75) ]
                         print(seq_values_core )
                         values_core = values_core + seq_values_core
@@ -967,7 +980,7 @@ if __name__ == '__main__':
     # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
     PROJECT_DIR = os.getcwd()
 
-    list_patients = []
+    list_patients = [43]
 
     if list_patients:
         for i in range(len(list_patients)):
@@ -1020,3 +1033,4 @@ if __name__ == '__main__':
     if os.path.exists(PATH_GLOBAL_CSV_CT_CORE): delete_duplications(PATH_GLOBAL_CSV_CT_CORE)
     if os.path.exists(PATH_GLOBAL_CSV_MRI_CORE): delete_duplications(PATH_GLOBAL_CSV_MRI_CORE)
     """
+
