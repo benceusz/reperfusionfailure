@@ -226,20 +226,6 @@ def subdirs(path):
 
 
 
-def delete_duplications(PATH_CSV):
-    """
-    PATH_CSV: Path of the csv file.
-    function finds the duplicated lines (by index) in the csv file stored in PATH_CSV and keeps only the last occurency.
-    sorting in abc order
-    """
-    df = pd.read_csv(PATH_CSV, sep="\t or ,")
-    df.drop_duplicates(subset=None, inplace=True, keep = 'last')
-    df.sort_values(df.columns[0])
-    df.to_csv(PATH_CSV, index=False, mode='w+', sep = ',')
-    print("Duplicates have been deleted and File has been saved in %s "% PATH_CSV)
-
-
-
 
 def run_mr_coreg(DATA_DIR):
     """
@@ -254,7 +240,7 @@ def run_mr_coreg(DATA_DIR):
     os.chdir(DATA_DIR)
     bins = 256
     PATH_T1_BRAINMASK = os.path.join(DATA_DIR, "t1_masked_with_aseg.nii.gz")
-    PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1",  + ".nii.gz")
+    PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1", FILENAME_BL_PENUMBRA + ".nii.gz")
 
     # specify all the possible sequence names that the algorihtm should iterate on
     # more names can be listed. Only exact matches will be processed
@@ -634,7 +620,6 @@ def run_mr_coreg(DATA_DIR):
     if os.path.exists(PATH_ADC):
         vol_adc = nb.load(PATH_ADC)
         np_vol_adc = vol_adc.get_fdata()
-
     #PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1", "coregt1_mask_penumbra_bl.nii.gz")
 
     PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1", FILENAME_BL_PENUMBRA + ".nii.gz" )
@@ -785,6 +770,7 @@ def run_mr_coreg(DATA_DIR):
         PATH_CSV_LOCAL_core = os.path.join(DATA_DIR, get_name_of_folder(DATA_DIR)+'_core.csv')
         df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
         df_core.to_csv(PATH_GLOBAL_CSV_MRI_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_MRI_CORE)))
+        print("CSV has been saved to %s" % PATH_GLOBAL_CSV_MRI_CORE)
 
 def run_ct_coreg(DATA_DIR):
     print("Running ct coregistration to mri in study: %s" % DATA_DIR)
@@ -1147,6 +1133,18 @@ def run_ct_coreg(DATA_DIR):
         df_core.to_csv(PATH_CSV_LOCAL_core, index=True, mode='w+', sep = ',')
         df_core.to_csv(PATH_GLOBAL_CSV_CT_CORE, mode='a', header=(not os.path.exists(PATH_GLOBAL_CSV_CT_CORE)))
 
+
+def delete_duplications(PATH_CSV):
+    """
+    PATH_CSV: Path of the csv file.
+    function finds the duplicated lines (by index) in the csv file stored in PATH_CSV and keeps only the last occurency.
+    sorting in abc order
+    """
+    df = pd.read_csv(PATH_CSV, sep="\t or ,")
+    df.drop_duplicates(subset=None, inplace=True, keep = 'last')
+    df.sort_values(df.columns[0])
+    df.to_csv(PATH_CSV, index=False, mode='w+', sep = ',')
+    print("Duplicates have been deleted and File has been saved in %s "% PATH_CSV)
 
 
 if __name__ == '__main__':
