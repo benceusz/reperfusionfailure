@@ -25,8 +25,10 @@ if not os.name == 'nt': import ants
 PROJECT_DIR = os.path.join(os.getcwd(), "/../")
 PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
-PROJECT_DIR = "D:\crpp_reperfusion_failure_update_30052022/"
-PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(os.path.dirname(os.path.abspath("__file__")) , "mni152_brainmask.nii.gz")
+PROJECT_DIR = "D:\crpp_reperfusion_failure_update_30052022\"
+
+PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  mni152_brainmask.nii.gz)
+
 PATH_GLOBAL_CSV_CT_PENUMBRA = os.path.join(PROJECT_DIR, 'values_all_ct_penumbra.csv')
 PATH_GLOBAL_CSV_MRI_PENUMBRA = os.path.join(PROJECT_DIR,'values_all_mr_penumbra.csv')
 
@@ -187,7 +189,6 @@ def run_ct_coreg(DATA_DIR):
         # constants
     os.chdir(DATA_DIR)
     bins = 256
-    PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  mni152_brainmask.nii.gz)
     #PATH_T1_BRAINMASK = os.path.join(DATA_DIR, "t1_masked_with_aseg.nii.gz")
     # coregistration to original t1 instead of brain extracted t1
     t1filename = [filename for filename in os.listdir(DATA_DIR) if filename.startswith("t1")]
