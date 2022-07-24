@@ -27,7 +27,7 @@ PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
 PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
 
-PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  mni152_brainmask.nii.gz)
+PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  "mni152_brainmask.nii.gz")
 
 PATH_GLOBAL_CSV_CT_PENUMBRA = os.path.join(PROJECT_DIR, 'values_all_ct_penumbra.csv')
 PATH_GLOBAL_CSV_MRI_PENUMBRA = os.path.join(PROJECT_DIR,'values_all_mr_penumbra.csv')
