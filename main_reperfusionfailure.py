@@ -60,7 +60,7 @@ def get_radiomics():
     "min",
     "p25",
     "median",
-    "p75",,
+    "p75",
     "max"]
 
     assert len(list_radiomics_functions) == len(tags_functions), "List have not the same length! Please check in get_radiomics function"
