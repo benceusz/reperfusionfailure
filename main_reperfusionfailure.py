@@ -23,6 +23,7 @@ warnings.warn('Do not show this message')
 if not os.name == 'nt': import ants
 
 PROJECT_DIR = os.path.join(os.getcwd(), "/../")
+PROJECT_DIR = "D:\crpp_reperfusion_failure_update_30052022/"
 PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(os.path.dirname(os.path.abspath("__file__")) , "mni152_brainmask.nii.gz")
 PATH_GLOBAL_CSV_CT_PENUMBRA = os.path.join(PROJECT_DIR, 'values_all_ct_penumbra.csv')
@@ -1023,8 +1024,12 @@ if __name__ == '__main__':
                 i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
                 match = nativ_in_folder(i_dirpath)
                 if match==1:
-                    print("processing CT study: %s" % i_dir)
-                    run_ct_coreg(i_dirpath)
+                    if not os.name == 'nt':
+                        run_ct_coreg(i_dirpath)
+                        print("processing CT study: %s" % i_dir)
+
+                    else:
+                        print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
 
                 else:
                     print("processing MR study: %s" % i_dir)
