@@ -186,7 +186,7 @@ def run_ct_coreg(DATA_DIR):
         # constants
     os.chdir(DATA_DIR)
     bins = 256
-    PATH_MNI_BRAINMASK = ref_img_mni = '/home/nraresearch/research/perfusion_integral/data/crpps_perfusionintegral/ALLCRPP_T1_CBF_MOCO_T1MASKS/mni152_brainmask.nii.gz'
+    PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  mni152_brainmask.nii.gz)
     #PATH_T1_BRAINMASK = os.path.join(DATA_DIR, "t1_masked_with_aseg.nii.gz")
     # coregistration to original t1 instead of brain extracted t1
     t1filename = [filename for filename in os.listdir(DATA_DIR) if filename.startswith("t1")]
