@@ -25,7 +25,7 @@ if not os.name == 'nt': import ants
 PROJECT_DIR = os.path.join(os.getcwd(), "/../")
 PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
-PROJECT_DIR = "D:\crpp_reperfusion_failure_update_30052022\"
+PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
 
 PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(PROJECT_DIR,  mni152_brainmask.nii.gz)
 
