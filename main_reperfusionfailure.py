@@ -50,11 +50,9 @@ def get_radiomics():
     list_radiomics_functions = [lambda x:np.mean(x),
     lambda x:np.std(x),
     lambda x:np.min(x),
-    lambda x:np.percentile(x,5),
     lambda x:np.percentile(x,25),
     lambda x:np.percentile(x,50),
     lambda x:np.percentile(x,75),
-    lambda x:np.percentile(x,95),
     lambda x:np.max(x)]
 
     tags_functions = ["mean",
