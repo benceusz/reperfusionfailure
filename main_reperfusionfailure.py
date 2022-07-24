@@ -8,7 +8,7 @@
 import os
 from nipype.interfaces import fsl
 from nipype.interfaces.freesurfer import MRIConvert
-import ants
+
 import nibabel as nb
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,6 +18,9 @@ import warnings
 warnings.filterwarnings('ignore')
 warnings.warn('DelftStack')
 warnings.warn('Do not show this message')
+
+# ants is developed only on linux and mac, not on windows
+if not os.name == 'nt': import ants
 
 PROJECT_DIR = os.path.join(os.getcwd(), "/../")
 PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
@@ -1040,7 +1043,11 @@ if __name__ == '__main__':
 
                 if match==1:
                     try:
-                        run_ct_coreg(i_dirpath)
+                        # run only if not on windows
+                        if not os.name == 'nt':
+                            run_ct_coreg(i_dirpath)
+                        else:
+                            print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
                     except:
                         print("Crush during processing %s" % i_patient)
 
