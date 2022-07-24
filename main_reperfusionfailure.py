@@ -20,6 +20,7 @@ warnings.warn('DelftStack')
 warnings.warn('Do not show this message')
 
 PROJECT_DIR = os.path.join(os.getcwd(), "/../")
+PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 PATH_MNI_BRAINMASK = ref_img_mni = os.path.join(os.path.dirname(os.path.abspath("__file__")) , "mni152_brainmask.nii.gz")
 PATH_GLOBAL_CSV_CT_PENUMBRA = os.path.join(PROJECT_DIR, 'values_all_ct_penumbra.csv')
 PATH_GLOBAL_CSV_MRI_PENUMBRA = os.path.join(PROJECT_DIR,'values_all_mr_penumbra.csv')
@@ -1005,13 +1006,7 @@ def delete_duplications(PATH_CSV):
 
 if __name__ == '__main__':
 
-    # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
-    PROJECT_DIR = os.getcwd()
-
-    # change before run: Select the original folder where T1_masked_with_aseg.nii.gz is present and the images are in "original" folder
-    PROJECT_DIR = os.getcwd()
-
-    list_patients = [43]
+    list_patients = []
 
     if list_patients:
         for i in range(len(list_patients)):
