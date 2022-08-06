@@ -26,10 +26,12 @@ warnings.filterwarnings('ignore')
 warnings.warn('DelftStack')
 warnings.warn('Do not show this message')
 
-PROJECT_DIR = os.path.join(os.getcwd(), "/../")
-PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
+#PROJECT_DIR = os.path.join(os.getcwd(), "/../")
+# PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
-PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
+#PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
+PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
+
 if PROJECT_DIR == "":
     PROJECT_DIR = os.getcwd()
     
@@ -280,48 +282,54 @@ def run_mr_coreg(DATA_DIR):
 
     for i_img in PERFUSION_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES:
         path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
-        if not os.path.isfile(path_out_file):
-            try:
-                mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
-                mc.inputs.out_file = path_out_file
-                
-                if i_img in _FLAG_MASKS:
-                    mc.inputs.resample_type = 'nearest'
-                else:
-                    mc.inputs.resample_type = 'interpolate'
-                
-                mc.inputs.out_type = 'niigz'
-                mc.inputs.reslice_like = PATH_T1_BRAINMASK
-                res_r = mc.run()
-                
-            except:
-                # print("Failure at processing file %s", path_out_file)
-                pass
+        # if not os.path.isfile(path_out_file):
+        if  os.path.isfile(path_out_file):
+            os.remove(path_out_file)
         else:
             # print("File %s already exist " % path_out_file)
             pass
+        try:
+            mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
+            mc.inputs.out_file = path_out_file
+            
+            if i_img in _FLAG_MASKS:
+                mc.inputs.resample_type = 'nearest'
+            else:
+                mc.inputs.resample_type = 'interpolate'
+            
+            mc.inputs.out_type = 'niigz'
+            mc.inputs.reslice_like = PATH_T1_BRAINMASK
+            res_r = mc.run()
+            
+        except:
+            # print("Failure at processing file %s", path_out_file)
+            pass
+
     """
     for i_img in MASK_FILES:
         path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
+        #if not os.path.isfile(path_out_file):
         if not os.path.isfile(path_out_file):
-            try:
-                mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
-                mc.inputs.out_file = path_out_file
-                mc.inputs.out_type = 'niigz'
-                mc.inputs.reslice_like = PATH_T1_BRAINMASK
-                if i_img in _FLAG_MASKS:
-                    mc.inputs.resample_type = 'nearest'
-                else:
-                    mc.inputs.resample_type = 'interpolate'
-                res_r = mc.run()
-                
-            except:
-                # print("Failure at processing file %s", path_out_file)
-                pass
+            os.remove(path_out_file):
         else:
             # print("File %s already exist " % path_out_file)
             pass
 
+        try:
+            mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
+            mc.inputs.out_file = path_out_file
+            mc.inputs.out_type = 'niigz'
+            mc.inputs.reslice_like = PATH_T1_BRAINMASK
+            if i_img in _FLAG_MASKS:
+                mc.inputs.resample_type = 'nearest'
+            else:
+                mc.inputs.resample_type = 'interpolate'
+            res_r = mc.run()
+            
+        except:
+            # print("Failure at processing file %s", path_out_file)
+            pass
+        
     """
 
     # coregister the not perfusion nifti files NIFTI_FILES = ["ADC","IVIM_ADC, IVIM_TRACEW_B5"]
@@ -367,24 +375,27 @@ def run_mr_coreg(DATA_DIR):
         # iterate through perfusion maps and apply the same transformation matrix calculated in the first step (path_base_dwi to t1)
         for i_img in DWI_FILES :
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
-            if not os.path.isfile(path_out_file):
-                try:
-                    path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-                    if os.path.isfile(path_infile):
-                        print("Processing {}".format(i_img))
-                        applyxfm = fsl.preprocess.ApplyXFM()
-                        applyxfm.inputs.in_file = path_infile
-                        applyxfm.inputs.in_matrix_file = path_matrix_file
-                        applyxfm.inputs.out_file = path_out_file
-                        applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                        applyxfm.inputs.apply_xfm = True
-                        result = applyxfm.run()
-                except:
-                    # print("Failure at processing file %s" % path_out_file)
-                    pass
+            # if not os.path.isfile(path_out_file):
+            if os.path.isfile(path_out_file):
+                os.remove(path_out_file)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
+            try:
+                path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
+                if os.path.isfile(path_infile):
+                    print("Processing {}".format(i_img))
+                    applyxfm = fsl.preprocess.ApplyXFM()
+                    applyxfm.inputs.in_file = path_infile
+                    applyxfm.inputs.in_matrix_file = path_matrix_file
+                    applyxfm.inputs.out_file = path_out_file
+                    applyxfm.inputs.reference = PATH_T1_BRAINMASK
+                    applyxfm.inputs.apply_xfm = True
+                    result = applyxfm.run()
+            except:
+                # print("Failure at processing file %s" % path_out_file)
+                pass
+            
     else:
         print("B1000 baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
@@ -427,28 +438,31 @@ def run_mr_coreg(DATA_DIR):
         # iterate through perfusion map and applies path_matrix_perf transformation matrix to every image in the list (perfusion image group)
         for i_img in PERFUSION_FILES :
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
-            if not os.path.isfile(path_out_file):
-                try:
-                    path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-                    if os.path.isfile(path_infile):
-                        print("Processing {}".format(i_img))
-                        applyxfm = fsl.preprocess.ApplyXFM()
-                        applyxfm.inputs.in_file = path_infile
-                        applyxfm.inputs.in_matrix_file = path_matrix_perf
-                        applyxfm.inputs.out_file = path_out_file
-                        applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                        applyxfm.inputs.apply_xfm = True
-                        if i_img in _FLAG_MASKS:
-                            applyxfm.inputs.interp = "nearestneighbour"
-                        # TODO missing interpolation if else?
-                        
-                        result = applyxfm.run()
-                except:
-                    # print("Failure at processing file %s" % i_img)
-                    pass
+            # if not os.path.isfile(path_out_file):
+            if os.path.isfile(path_out_file):
+                os.remove(path_out_file)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
+            try:
+                path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
+                if os.path.isfile(path_infile):
+                    print("Processing {}".format(i_img))
+                    applyxfm = fsl.preprocess.ApplyXFM()
+                    applyxfm.inputs.in_file = path_infile
+                    applyxfm.inputs.in_matrix_file = path_matrix_perf
+                    applyxfm.inputs.out_file = path_out_file
+                    applyxfm.inputs.reference = PATH_T1_BRAINMASK
+                    applyxfm.inputs.apply_xfm = True
+                    if i_img in _FLAG_MASKS:
+                        applyxfm.inputs.interp = "nearestneighbour"
+                    # TODO missing interpolation if else?
+                    
+                    result = applyxfm.run()
+            except:
+                # print("Failure at processing file %s" % i_img)
+                pass
+            
         # TODO why did i comment this out?
         """
         # core mask has been segmented in adc space, penumbra in Tmax perfusion cards^ space
@@ -484,7 +498,7 @@ def run_mr_coreg(DATA_DIR):
     for i_img in NIFTI_FILES:
         try:
             path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-            if os.path.isfile(path_infile):
+            if os.path.isfile(path_infile): # TODO why without not?
                 print("FAILURE: File %s does not exist. Break" % i_img)
                 break
             # path_matrix_file = os.path.join( os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img +"_2_t1matrix.mat")
@@ -529,6 +543,7 @@ def run_mr_coreg(DATA_DIR):
 
     # calculates the transformation matrix only between T1 highresolution brain extracted image and MNI152. Applies the transformation matrix to every t1 registered nii.gz images processed so far.
     # coregister all the NIFTI_FILES to MNI wiht transformation matrix between t1 and MNI152
+    
     os.chdir(DATA_DIR)
     path = "./" + dir_coreg_name
     os.chdir(path) # TODO EXTRA INSERTED
@@ -541,7 +556,7 @@ def run_mr_coreg(DATA_DIR):
         print("{0} is not a directory".format(path))
     except PermissionError:
         print("You do not have permissions to change to {0}".format(path))
-
+    
 
     dir_mni_name = "mni"
     path_dir_mni= os.path.join(os.getcwd(),"../"+dir_mni_name)
@@ -551,9 +566,10 @@ def run_mr_coreg(DATA_DIR):
     # coregistrate T1 to MNI and store transofrmation matrix
     tag_base_file = "t1_masked_with_aseg"
     path_matrix_mni_file = os.path.join( os.getcwd(), "../" + dir_mni_name  + "/" + tag_base_file +"_2_mnimatrix.mat")
-
+    """
     print("Path of T1 file to be coregistered to MNI is {}".format(PATH_T1_BRAINMASK))
     path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + tag_base_file  + ".nii.gz")
+    
     PATH_CBF_2_BET_T1= run_flirt(path_infile = PATH_T1_BRAINMASK,
                                  out_file=path_out_file,
                                  path_reference = PATH_MNI_BRAINMASK,
@@ -563,29 +579,33 @@ def run_mr_coreg(DATA_DIR):
     # iterate through all files and apply the transformation matrix calculated above between the patient's t1  and mni space
     for i_img in PERFUSION_FILES+ MASK_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES :
         path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + i_img + ".nii.gz")
-        if not os.path.isfile(path_out_file):
-            try:
-                path_infile = os.path.join(os.getcwd(),"coregt1_" + i_img + '.nii.gz')
-                if os.path.isfile(path_infile):
-                    print("Processing {}".format(i_img))
-                    applyxfm = fsl.preprocess.ApplyXFM()
-                    applyxfm.inputs.in_file = path_infile
-                    applyxfm.inputs.in_matrix_file = path_matrix_mni_file
-                    applyxfm.inputs.out_file = path_out_file
-                    #applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                    applyxfm.inputs.reference = PATH_MNI_BRAINMASK
-                    applyxfm.inputs.apply_xfm = True
-                    result = applyxfm.run()
-                    # TODO extra inserted
-                    if i_img in _FLAG_MASKS:
-                        applyxfm.inputs.interp = "nearestneighbour"
-            except:
-                # print("Failure at processing file %s" % path_out_file)
-                pass
+        #if not os.path.isfile(path_out_file):
+        if os.path.isfile(path_out_file):
+            os.remove(path_out_file)
         else:
             # print("File %s already exist " % path_out_file)
             pass
 
+        try:
+            path_infile = os.path.join(os.getcwd(),"coregt1_" + i_img + '.nii.gz')
+            if os.path.isfile(path_infile):
+                print("Processing {}".format(i_img))
+                applyxfm = fsl.preprocess.ApplyXFM()
+                applyxfm.inputs.in_file = path_infile
+                applyxfm.inputs.in_matrix_file = path_matrix_mni_file
+                applyxfm.inputs.out_file = path_out_file
+                #applyxfm.inputs.reference = PATH_T1_BRAINMASK
+                applyxfm.inputs.reference = PATH_MNI_BRAINMASK
+                applyxfm.inputs.apply_xfm = True
+                result = applyxfm.run()
+                # TODO extra inserted
+                if i_img in _FLAG_MASKS:
+                    applyxfm.inputs.interp = "nearestneighbour"
+        except:
+            # print("Failure at processing file %s" % path_out_file)
+            pass
+        
+    """
         ### calculate the values
     #  read the coregistered CBF file
 
@@ -816,7 +836,7 @@ def run_ct_coreg(DATA_DIR):
 
     # create coregt1 folder to store the t1 space coregistered nifti files
     dir_coreg_name = "coregt1"
-    path_dir_coregt= os.path.join(os.getcwd(),"../"+dir_coreg_name)
+    path_dir_coregt= os.path.join(os.getcwd(),"..", dir_coreg_name)
     if not os.path.isdir(path_dir_coregt):
         os.mkdir(path_dir_coregt)
 
@@ -861,47 +881,53 @@ def run_ct_coreg(DATA_DIR):
         # iterate through perfusion maps
         for i_img in PERFUSION_FILES:
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
-            if not os.path.isfile(path_out_file):
-
-                try:
-                    print("Apply matrix transform of file %s with ANTS" % i_img)
-
-                    path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
-                    moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
-
-                    #mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'nearestNeighbor', transformlist=registration['fwdtransforms'] )
-                    mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving,  transformlist=registration['fwdtransforms'] )
-
-                    ants.image_write(mywarpedimage, path_out_file)
-
-                except:
-                    # print("Failure at processing file %s" % i_img)
-                    print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
+            #if not os.path.isfile(path_out_file):
+            if os.path.isfile(path_out_file):
+                os.remove(path_out_file)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
+        
+            try:
+                print("Apply matrix transform of file %s with ANTS" % i_img)
 
+                path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
+                moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
+
+                #mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'nearestNeighbor', transformlist=registration['fwdtransforms'] )
+                mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving,  transformlist=registration['fwdtransforms'] )
+
+                ants.image_write(mywarpedimage, path_out_file)
+
+            except:
+                # print("Failure at processing file %s" % i_img)
+                print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
+            
         for i_img in MASK_FILES:
             path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
 
-            if not os.path.isfile(path_out_file):
-                try:
-                    print("Apply matrix transform for masks %s with ANTS" % i_img)
+            #if not os.path.isfile(path_out_file):
+            if os.path.isfile(path_out_file):
+                os.remove(path_out_file)
 
-                    path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
-                    moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
-
-                    # mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'nearestNeighbor', transformlist=registration['fwdtransforms'] )
-                    mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'genericLabel', transformlist=registration['fwdtransforms'] )
-                    ants.image_write(mywarpedimage, path_out_file)
-
-                except:
-                    # print("Failure at processing file %s" % i_img)
-                    print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
 
+            try:
+                print("Apply matrix transform for masks %s with ANTS" % i_img)
+
+                path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img + ".nii.gz")
+                moving = ants.image_read(os.path.join(os.getcwd(),i_img + '.nii.gz'))
+
+                # mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'nearestNeighbor', transformlist=registration['fwdtransforms'] )
+                mywarpedimage = ants.apply_transforms( fixed=mr_t1, moving=moving, interpolator = 'genericLabel', transformlist=registration['fwdtransforms'] )
+                ants.image_write(mywarpedimage, path_out_file)
+
+            except:
+                # print("Failure at processing file %s" % i_img)
+                print("FAILURE: ANTS coregistration at sequence: %s crushed" % i_img)
+            
 
     else:
         print("MIP baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
@@ -909,6 +935,7 @@ def run_ct_coreg(DATA_DIR):
     # coregistrate bold, and other nifti files in different spaces (T2 , FLAIR etc)
 
     # coregister all the NIFTI_FILES to MNI wiht transformation matrix between t1 and MNI152
+    
     os.chdir(DATA_DIR)
     path = "./" + dir_coreg_name
     try:
@@ -921,9 +948,11 @@ def run_ct_coreg(DATA_DIR):
     except PermissionError:
         print("You do not have permissions to change to {0}".format(path))
 
+    
     dir_mni_name = "mni"
     path_dir_mni= os.path.join(os.getcwd(),"../"+dir_mni_name)
-    if not os.path.isdir(path_dir_mni):
+    #if not os.path.isdir(path_dir_mni):
+    if os.path.exists(path_dir_mni):
         os.mkdir(path_dir_mni)
 
 
@@ -935,7 +964,7 @@ def run_ct_coreg(DATA_DIR):
     path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + tag_base_file  + ".nii.gz")
 
 
-
+    """
     PATH_CBF_2_BET_T1= run_flirt(path_infile = PATH_T1_BRAINMASK,
                                  out_file=path_out_file,
                                  path_reference = PATH_MNI_BRAINMASK,
@@ -945,26 +974,29 @@ def run_ct_coreg(DATA_DIR):
     # iterate through all files and apply the transformation matrix calculated above between the patient's t1  and mni space
     for i_img in PERFUSION_FILES+ MASK_FILES:
         path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + i_img + ".nii.gz")
-        if not os.path.isfile(path_out_file):
-            try:
-                path_infile = os.path.join(os.getcwd(),"coregt1_" + i_img + '.nii.gz')
-                if os.path.isfile(path_infile):
-                    print("Processing {}".format(i_img))
-                    applyxfm = fsl.preprocess.ApplyXFM()
-                    applyxfm.inputs.in_file = path_infile
-                    applyxfm.inputs.in_matrix_file = path_matrix_mni_file
-                    applyxfm.inputs.out_file = path_out_file
-                    #applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                    applyxfm.inputs.reference = PATH_MNI_BRAINMASK
-                    applyxfm.inputs.apply_xfm = True
-                    result = applyxfm.run()
-            except:
-                # print("Failure at processing file %s" % path_out_file)
-                pass
+        # if not os.path.isfile(path_out_file):
+        if os.path.isfile(path_out_file):
+            os.remove(path_out_file)
         else:
             # print("File %s already exist " % path_out_file)
             pass
 
+        try:
+            path_infile = os.path.join(os.getcwd(),"coregt1_" + i_img + '.nii.gz')
+            if os.path.isfile(path_infile):
+                print("Processing {}".format(i_img))
+                applyxfm = fsl.preprocess.ApplyXFM()
+                applyxfm.inputs.in_file = path_infile
+                applyxfm.inputs.in_matrix_file = path_matrix_mni_file
+                applyxfm.inputs.out_file = path_out_file
+                #applyxfm.inputs.reference = PATH_T1_BRAINMASK
+                applyxfm.inputs.reference = PATH_MNI_BRAINMASK
+                applyxfm.inputs.apply_xfm = True
+                result = applyxfm.run()
+        except:
+            # print("Failure at processing file %s" % path_out_file)
+            pass
+    """
 #  read the coregistered CBF file
     PATH_TMAX = os.path.join(os.path.dirname(PATH_MASK_PENUMBRA),'coregt1_TMAXD.nii.gz' )
     #if os.path.exists(PATH_TMAX):
@@ -1149,10 +1181,10 @@ def delete_duplications(PATH_CSV):
 
 if __name__ == '__main__':
 
-    list_patients = [1]
+    list_patients = []
 
     os.chdir(PROJECT_DIR)
-
+    # if list_patients is not empty
     if list_patients:
         for i in range(len(list_patients)):
             i_patient = "CRPP" +str(list_patients[i])
@@ -1163,7 +1195,7 @@ if __name__ == '__main__':
             list_studies = [ name for name in os.listdir(patient_dir_path) if os.path.isdir(os.path.join(patient_dir_path, name)) and name.startswith('crpp') ]
             for i_dir in list_studies:
                 i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
-                """
+                
                 match = nativ_in_folder(i_dirpath)
 
                 if match==1:
@@ -1179,7 +1211,7 @@ if __name__ == '__main__':
                     print("processing MR study: %s" % i_dir)
                     run_mr_coreg(i_dirpath)
                     print("Crush during processing %s" % i_patient)
-                """
+                
                 print("processing MR study: %s" % i_dir)
                 run_mr_coreg(i_dirpath)
     else:
@@ -1191,25 +1223,18 @@ if __name__ == '__main__':
             for i_dir in list_studies:
                 print("processing study: %s" % i_dir)
                 i_dirpath = os.path.join(PROJECT_DIR, i_patient, i_dir)
-                """
+                
+                # match with nativ CT file?
                 match = nativ_in_folder(i_dirpath)
  
                 if match==1:
-                    try:
-                        # run only if not on windows
-                        if not os.name == 'nt':
-                            run_ct_coreg(i_dirpath)
-                        else:
-                            print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
-               
-                    except:
-                        print("Crush during processing %s" % i_patient)
-                """    
-
-                try:
+                    # run only if not on windows
+                    #    if not os.name == 'nt':
+                    run_ct_coreg(i_dirpath)
+                    #    else:
+                    #       print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
+                else:
                     run_mr_coreg(i_dirpath)
-                except:
-                    print("Crush during processing %s" % i_patient)
 
     # delete duplications from global csv files
     """
