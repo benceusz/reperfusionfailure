@@ -32,6 +32,7 @@ warnings.warn('Do not show this message')
 #PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
 # PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
 PROJECT_DIR = "/mnt/c/wsl/"
+PROJECT_DIR = "/media/nraresearch/seagate/crpp_reperfusion_failure_update_30052022"
 if PROJECT_DIR == "":
     PROJECT_DIR = os.getcwd()
     
@@ -303,8 +304,10 @@ def run_mr_coreg(DATA_DIR):
             
             mc.inputs.out_type = 'niigz'
             mc.inputs.reslice_like = PATH_T1_BRAINMASK
-            res_r = mc.run()
-            
+            try:
+                res_r = mc.run()
+            except:
+                print("FAILURE!!! FILE EXISTS IN ORIGINAL BUT NOT READABLE %s" % input_file)
         else:
             print("Input file does not exist in original folder %s",input_file)
             
@@ -409,22 +412,22 @@ def run_mr_coreg(DATA_DIR):
     tag_base_file = "tMIPS"
 
     #PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
-    PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+    PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
     if not os.path.isfile(PATH_BASE_PERF):
         tag_base_file = "tMIPs"
-        PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+        PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
         
         if not os.path.isfile(PATH_BASE_PERF):
             tag_base_file = "tMIP"
-            PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+            PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
             
             if not os.path.isfile(PATH_BASE_PERF):
                 tag_base_file = "rBF"
-                PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+                PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
             
                 if not os.path.isfile(PATH_BASE_PERF):
                     tag_base_file = "rBV"
-                    PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+                    PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
 
     if os.path.isfile(PATH_BASE_PERF):
 
