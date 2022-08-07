@@ -30,8 +30,8 @@ warnings.warn('Do not show this message')
 # PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
 #PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
-PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
-
+# PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
+PROJECT_DIR = "/mnt/c/wsl/"
 if PROJECT_DIR == "":
     PROJECT_DIR = os.getcwd()
     
@@ -281,14 +281,18 @@ def run_mr_coreg(DATA_DIR):
         os.mkdir(path_dir_resliced)
 
     for i_img in PERFUSION_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES:
-        path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
+        #path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
+        path_out_file = os.path.join(path_dir_resliced, "r_" + i_img + ".nii.gz")
+        print("DEBUG: path of resliced %s" % path_out_file)
         # if not os.path.isfile(path_out_file):
-        if  os.path.isfile(path_out_file):
+        if os.path.isfile(path_out_file):
             os.remove(path_out_file)
         else:
             # print("File %s already exist " % path_out_file)
             pass
-        try:
+
+        input_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
+        if os.path.isfile(input_file): 
             mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
             mc.inputs.out_file = path_out_file
             
@@ -301,10 +305,9 @@ def run_mr_coreg(DATA_DIR):
             mc.inputs.reslice_like = PATH_T1_BRAINMASK
             res_r = mc.run()
             
-        except:
-            # print("Failure at processing file %s", path_out_file)
-            pass
-
+        else:
+            print("Input file does not exist in original folder %s",input_file)
+            
     """
     for i_img in MASK_FILES:
         path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
@@ -381,7 +384,9 @@ def run_mr_coreg(DATA_DIR):
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
-            try:
+            
+            input_file = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
+            if os.path.isfile(input_file):
                 path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
                 if os.path.isfile(path_infile):
                     print("Processing {}".format(i_img))
@@ -392,10 +397,9 @@ def run_mr_coreg(DATA_DIR):
                     applyxfm.inputs.reference = PATH_T1_BRAINMASK
                     applyxfm.inputs.apply_xfm = True
                     result = applyxfm.run()
-            except:
-                # print("Failure at processing file %s" % path_out_file)
-                pass
-            
+            else:
+                print("Input file %s in resliced folder does not exist" % input_file)
+                
     else:
         print("B1000 baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
@@ -952,7 +956,7 @@ def run_ct_coreg(DATA_DIR):
     dir_mni_name = "mni"
     path_dir_mni= os.path.join(os.getcwd(),"../"+dir_mni_name)
     #if not os.path.isdir(path_dir_mni):
-    if os.path.exists(path_dir_mni):
+    if not os.path.exists(path_dir_mni):
         os.mkdir(path_dir_mni)
 
 
@@ -1181,7 +1185,7 @@ def delete_duplications(PATH_CSV):
 
 if __name__ == '__main__':
 
-    list_patients = []
+    list_patients = [1]
 
     os.chdir(PROJECT_DIR)
     # if list_patients is not empty
@@ -1199,21 +1203,15 @@ if __name__ == '__main__':
                 match = nativ_in_folder(i_dirpath)
 
                 if match==1:
-                    if not os.name == 'nt':
-                        run_ct_coreg(i_dirpath)
-                        print("processing CT study: %s" % i_dir)
-
-                    else:
-                        print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
-
+                    # if not os.name == 'nt':
+                    run_ct_coreg(i_dirpath)
+                    print("processing CT study: %s" % i_dir)
 
                 else:
                     print("processing MR study: %s" % i_dir)
                     run_mr_coreg(i_dirpath)
                     print("Crush during processing %s" % i_patient)
                 
-                print("processing MR study: %s" % i_dir)
-                run_mr_coreg(i_dirpath)
     else:
         for i_patient in [ name for name in os.listdir(PROJECT_DIR) if os.path.isdir(os.path.join(PROJECT_DIR, name)) and name.startswith('CRPP') ]:
             print("processing patient: %s" % i_patient)
