@@ -30,7 +30,8 @@ warnings.warn('Do not show this message')
 # PROJECT_DIR = "/home/nraresearch/research/data_reperfusionfailure/"
 
 #PROJECT_DIR = "D:/crpp_reperfusion_failure_update_30052022/"
-PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
+# PROJECT_DIR = "/mnt/d/crpp_reperfusion_failure_update_30052022/"
+PROJECT_DIR = "/media/nraresearch/seagate/crpp_reperfusion_failure_update_30052022"
 
 if PROJECT_DIR == "":
     PROJECT_DIR = os.getcwd()
@@ -952,7 +953,7 @@ def run_ct_coreg(DATA_DIR):
     dir_mni_name = "mni"
     path_dir_mni= os.path.join(os.getcwd(),"../"+dir_mni_name)
     #if not os.path.isdir(path_dir_mni):
-    if os.path.exists(path_dir_mni):
+    if not os.path.exists(path_dir_mni):
         os.mkdir(path_dir_mni)
 
 
@@ -1181,7 +1182,7 @@ def delete_duplications(PATH_CSV):
 
 if __name__ == '__main__':
 
-    list_patients = []
+    list_patients = [1]
 
     os.chdir(PROJECT_DIR)
     # if list_patients is not empty
