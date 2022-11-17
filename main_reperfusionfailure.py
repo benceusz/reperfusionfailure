@@ -282,14 +282,18 @@ def run_mr_coreg(DATA_DIR):
         os.mkdir(path_dir_resliced)
 
     for i_img in PERFUSION_FILES + DWI_FILES + NIFTI_FILES + BOLD_FILES:
-        path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
+        #path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
+        path_out_file = os.path.join(path_dir_resliced, "r_" + i_img + ".nii.gz")
+        print("DEBUG: path of resliced %s" % path_out_file)
         # if not os.path.isfile(path_out_file):
-        if  os.path.isfile(path_out_file):
+        if os.path.isfile(path_out_file):
             os.remove(path_out_file)
         else:
             # print("File %s already exist " % path_out_file)
             pass
-        try:
+
+        input_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
+        if os.path.isfile(input_file): 
             mc.inputs.in_file = os.path.join(os.getcwd(), i_img + '.nii.gz')
             mc.inputs.out_file = path_out_file
             
@@ -300,18 +304,19 @@ def run_mr_coreg(DATA_DIR):
             
             mc.inputs.out_type = 'niigz'
             mc.inputs.reslice_like = PATH_T1_BRAINMASK
-            res_r = mc.run()
+            try:
+                res_r = mc.run()
+            except:
+                print("FAILURE!!! FILE EXISTS IN ORIGINAL BUT NOT READABLE %s" % input_file)
+        else:
+            print("Input file does not exist in original folder %s",input_file)
             
-        except:
-            # print("Failure at processing file %s", path_out_file)
-            pass
-
     """
     for i_img in MASK_FILES:
         path_out_file = os.path.join(os.getcwd(), "../resliced/r_" + i_img + ".nii.gz")
         #if not os.path.isfile(path_out_file):
         if not os.path.isfile(path_out_file):
-            os.remove(path_out_file):
+            os.remove(path_out_file): # TODO dont delete existing mask files
         else:
             # print("File %s already exist " % path_out_file)
             pass
@@ -382,7 +387,9 @@ def run_mr_coreg(DATA_DIR):
             else:
                 # print("File %s already exist " % path_out_file)
                 pass
-            try:
+            
+            input_file = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
+            if os.path.isfile(input_file):
                 path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
                 if os.path.isfile(path_infile):
                     print("Processing {}".format(i_img))
@@ -393,10 +400,9 @@ def run_mr_coreg(DATA_DIR):
                     applyxfm.inputs.reference = PATH_T1_BRAINMASK
                     applyxfm.inputs.apply_xfm = True
                     result = applyxfm.run()
-            except:
-                # print("Failure at processing file %s" % path_out_file)
-                pass
-            
+            else:
+                print("Input file %s in resliced folder does not exist" % input_file)
+                
     else:
         print("B1000 baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
@@ -406,22 +412,22 @@ def run_mr_coreg(DATA_DIR):
     tag_base_file = "tMIPS"
 
     #PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
-    PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+    PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
     if not os.path.isfile(PATH_BASE_PERF):
         tag_base_file = "tMIPs"
-        PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+        PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
         
         if not os.path.isfile(PATH_BASE_PERF):
             tag_base_file = "tMIP"
-            PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+            PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
             
             if not os.path.isfile(PATH_BASE_PERF):
                 tag_base_file = "rBF"
-                PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+                PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
             
                 if not os.path.isfile(PATH_BASE_PERF):
                     tag_base_file = "rBV"
-                    PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+                    PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
 
     if os.path.isfile(PATH_BASE_PERF):
 
@@ -842,15 +848,16 @@ def run_ct_coreg(DATA_DIR):
         os.mkdir(path_dir_coregt)
 
 
-    # coregistrate rBV and store transformation matrix
+    # coregistrate MIP from perfusion series group and store transformation matrix
     tag_base_file = "MIP"
 
     #PATH_BASE_PERF = os.path.abspath("./r_" +tag_base_file +".nii.gz")
     PATH_BASE_PERF = os.path.abspath("./" +tag_base_file +".nii.gz")
+    # if MIP does not exist then it will look for "tMIP"
     if not os.path.isfile(PATH_BASE_PERF):
         # sometime file is calle tMIP instead of MIP
         PATH_BASE_PERF = os.path.abspath("./t" +tag_base_file +".nii.gz")
-
+    # TODO if no MIP or tMIP exist, then it should choose smth else
 
     if os.path.isfile(PATH_BASE_PERF):
 
@@ -869,9 +876,15 @@ def run_ct_coreg(DATA_DIR):
         print("Linear coregistration of sequence %s with ANTS " % PATH_BASE_PERF)
         mr_t1 = ants.image_read(PATH_T1_BRAINMASK)
         perf_mip =  ants.image_read(PATH_BASE_PERF)
-        registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Rigid' )
-        #registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Affine' ) # TODO
+        # rigid coregistration with 6 Degree of freedom        
+        # registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Rigid' )
+        
+        ## affine transformation with 9 degree of freedom
+        registration = ants.registration(fixed = mr_t1 , moving = perf_mip, type_of_transform = 'Affine' ) # TODO
+        # TODO consider using rather 7 Degree of freedom . does ants have option for it?
 
+
+    
         path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + tag_base_file  + ".nii.gz")
         ants.image_write(registration['warpedmovout'], path_out_file)
 
@@ -909,7 +922,9 @@ def run_ct_coreg(DATA_DIR):
 
             #if not os.path.isfile(path_out_file):
             if os.path.isfile(path_out_file):
-                os.remove(path_out_file)
+                # os.remove(path_out_file)
+                # We dont delete masks from coregt1 folder, because they may be defined there manually. and there are no original mask in originayl folder in every case
+                pass
 
             else:
                 # print("File %s already exist " % path_out_file)
@@ -977,7 +992,7 @@ def run_ct_coreg(DATA_DIR):
         path_out_file = os.path.join(os.getcwd(), "../" + dir_mni_name  + "/" + dir_mni_name +"_" + i_img + ".nii.gz")
         # if not os.path.isfile(path_out_file):
         if os.path.isfile(path_out_file):
-            os.remove(path_out_file)
+            os.remove(path_out_file) # TODO dont delete existing mask files
         else:
             # print("File %s already exist " % path_out_file)
             pass
@@ -1200,21 +1215,15 @@ if __name__ == '__main__':
                 match = nativ_in_folder(i_dirpath)
 
                 if match==1:
-                    if not os.name == 'nt':
-                        run_ct_coreg(i_dirpath)
-                        print("processing CT study: %s" % i_dir)
-
-                    else:
-                        print("Ants for CT coregistration cannot be used on Windows. Please calculat the CT registrations on a linux machine. Just run the code again there.")
-
+                    # if not os.name == 'nt':
+                    run_ct_coreg(i_dirpath)
+                    print("processing CT study: %s" % i_dir)
 
                 else:
                     print("processing MR study: %s" % i_dir)
                     run_mr_coreg(i_dirpath)
-                    print("Crush during processing %s" % i_patient)
+                    # print("Crush during processing %s" % i_patient)
                 
-                print("processing MR study: %s" % i_dir)
-                run_mr_coreg(i_dirpath)
     else:
         for i_patient in [ name for name in os.listdir(PROJECT_DIR) if os.path.isdir(os.path.join(PROJECT_DIR, name)) and name.startswith('CRPP') ]:
             print("processing patient: %s" % i_patient)
