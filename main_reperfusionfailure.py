@@ -526,22 +526,32 @@ def run_mr_coreg(DATA_DIR):
     for i_img in BOLD_FILES:
         #try:
         path_infile = os.path.join(os.getcwd(),"r_" + i_img + '.nii.gz')
-        path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.mat")
-        if not os.path.isfile(path_matrix_file_bold):
-            path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.txt")
+                
+#        path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.mat")
+#        if not os.path.isfile(path_matrix_file_bold):
+#            path_matrix_file_bold = os.path.join( os.getcwd(),'..','original', "inv_coreg_T1_BOLD.txt")
 
         print("Coregistration of {} to T1".format(i_img))
+    
         path_out_file = os.path.join(os.getcwd(), "../" + dir_coreg_name  + "/" + dir_coreg_name +"_" + i_img  + ".nii.gz")
         try:
             if os.path.isfile(path_infile):
                 print("Processing {}".format(i_img))
-                applyxfm = fsl.preprocess.ApplyXFM()
-                applyxfm.inputs.in_file = path_infile
-                applyxfm.inputs.in_matrix_file = path_matrix_file_bold
-                applyxfm.inputs.out_file = path_out_file
-                applyxfm.inputs.reference = PATH_T1_BRAINMASK
-                applyxfm.inputs.apply_xfm = True
-                result = applyxfm.run()
+                
+                mr_t1 = ants.image_read(PATH_T1_BRAINMASK) # maybe better to try with BET extracted T1 (does not cut out stroke area, only skull!)
+                bold = ants.image_read(path_infile)
+                registration = ants.registration(fixed = mr_t1, moving = bold, type_of_transform = 'Affine')
+                ants.image_write(registration['warpedmovout'], path_out_file)
+                
+                # use inverted transform matrix obtained by neurosurgeons (DID NOT WORK!)
+#                applyxfm = fsl.preprocess.ApplyXFM()
+#                applyxfm.inputs.in_file = path_infile
+#                applyxfm.inputs.in_matrix_file = path_matrix_file_bold
+#                applyxfm.inputs.out_file = path_out_file
+#                applyxfm.inputs.reference = PATH_T1_BRAINMASK
+#                applyxfm.inputs.apply_xfm = True
+#                result = applyxfm.run()
+
         except:
             print("FAILURE: File %s could not be processed" % i_img)
 
