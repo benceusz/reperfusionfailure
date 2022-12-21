@@ -243,11 +243,13 @@ def run_mr_coreg(DATA_DIR):
     os.chdir(DATA_DIR)
     bins = 256
     PATH_T1_BRAINMASK = os.path.join(DATA_DIR, "t1_masked_with_aseg.nii.gz")
+    PATH_T1_BRAINSEGMENTATION = os.path.join(DATA_DIR, "faseg-in-rawavg.nii.gz")
     PATH_MASK_PENUMBRA = os.path.join(DATA_DIR, "coregt1", FILENAME_BL_PENUMBRA + ".nii.gz")
 
     # specify all the possible sequence names that the algorihtm should iterate on
     # more names can be listed. Only exact matches will be processed
     MASK_FILES = ["mask_core_v1","mask_penumbra","mask_penumbra_bl", "mask_penumbra_v1", "mask_penumbra_bl_4-6"]
+    MASK_FILES_2_REMOVE_CSF = ["mask_penumbra_bl", "mask_penumbra_bl_4-6"]
     MASK_FILES = [] # TODO
     DWI_FILES = ["mask_core_v1", "ADC","IVIM_ADC", "IVIM_TRACEW_1","IVIM_TRACEW_2","IVIM_TRACEW_3","IVIM_TRACEW_4","IVIM_TRACEW_5","IVIM_TRACEW_B5", "B1000","B1000_NATIVE","Bxxxx" ]
     NIFTI_FILES = ["FLAIR"]
@@ -496,6 +498,36 @@ def run_mr_coreg(DATA_DIR):
                 pass
 
         """
+        
+        # REMOVE CSF FROM PENUMBRA MASKS
+        
+        # create ventricles mask
+        # load segmentation labels file
+        labels = nib.load(PATH_T1_BRAINSEGMENTATION)
+        # convert to numpy array
+        labels_np = labels.get_fdata()
+        # get only ventricle labels in mask
+        ventricles_mask = np.isin(labels_np, [4, 5, 14, 15, 43, 44, 72])
+        # convert from numpy to nifti
+        ventricles_mask_nifti = nib.Nifti1Image(ventricles_mask.astype(int), labels.affine)
+        # save ventricle mask as nifti file
+        ventricles_mask_path = os.path.join(DATA_DIR, "coregt1", "ventricles_mask.nii.gz")
+        nib.save(ventricles_mask_nifti, ventricles_mask_path)
+        
+        # (optional) dilate mask
+        # os.system("fslmaths " + ventricles_mask_path + " -dilM " + ventricles_mask_path)
+        
+        # invert mask (everything except ventricles)
+        inv_ventricle_mask_path = os.path.join(DATA_DIR, "coregt1", "inv_ventricles_mask.nii.gz")
+        os.system("fslmaths " + ventricles_mask_path + " -mul -1 -add 1 " + inv_ventricle_mask_path)
+
+        # remove CSF from prnumbra masks
+        for mask_i in MASK_FILES_2_REMOVE_CSF:
+            mask_path = os.path.join(DATA_DIR, "coregt1", mask_i + ".nii.gz")
+            os.system("fslmaths " + mask_path + " -mul " + inv_ventricle_mask_path + " " + mask_path)
+            
+
+        
     else:
         print("rBV baseline file does not exist to calculate the transformation matrix for perfusion files. Choose a new baseline file or place the B1000 file in the original folder")
 
